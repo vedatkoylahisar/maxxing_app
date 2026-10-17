@@ -41,6 +41,14 @@ dotnet ef migrations add <Ad> --project maxxing_app --output-dir Data/Migrations
 - OpenAPI dokümanı (development): `GET /openapi/v1.json`
 - Proje klasörünün adı `maxxing_app` kalmalı: Docker volume adı klasör adından türetiliyor, değişirse boş bir veritabanı açılır.
 
+## Git
+
+- **Claude asla commit atmaz, asla push yapmaz.** `git commit`, `git push`, `git merge` ve geçmişi değiştiren hiçbir komutu çalıştırmaz. Commit ve push'u her zaman kullanıcı kendisi yapar. Claude sadece dosyaları düzenler; istenirse çalıştırılacak git komutlarını yazar.
+- Repo: https://github.com/vedatkoylahisar/maxxing_app
+- `main` her zaman çalışan sürümdür; `main`'e doğrudan commit atılmaz.
+- Her özellik `main`'den açılan kendi branch'inde yapılır (örn. `auth`). Claude işe başlamadan önce doğru branch'te olunduğunu kontrol eder.
+- Özellik bitince GitHub'da Pull Request açılıp `main`'e birleştirilir.
+
 ## Yol haritası
 
 Her adımda önce backend, sonra o özelliğin ekranı yapılır.
