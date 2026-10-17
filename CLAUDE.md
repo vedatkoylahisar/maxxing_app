@@ -21,7 +21,7 @@ Kullanıcı akışı: kayıt ol / profil oluştur → rutinleri belirle → her 
 
 | Parça | Teknoloji | Konum |
 |---|---|---|
-| Uygulama | React Native + Expo. Önce web olarak kullanılacak, sonra aynı kodla iOS. | `app/` (henüz oluşturulmadı) |
+| Uygulama | React Native + Expo (SDK 58), Expo Router. Önce web olarak kullanılacak, sonra aynı kodla iOS. | `app/` |
 | API | ASP.NET Core, .NET 10, controller tabanlı, EF Core | `maxxing_app/` |
 | Veritabanı | PostgreSQL 17, Docker içinde | `docker-compose.yml` |
 
@@ -33,10 +33,25 @@ Tüm iş kuralları API'de yaşar: kimlik doğrulama, kim neyi görebilir, seri 
 docker compose up -d                 # PostgreSQL (container: maxxing_db, volume: maxxing_pgdata)
 dotnet run --project maxxing_app     # API -> http://localhost:5055
 dotnet ef migrations add <Ad> --project maxxing_app --output-dir Data/Migrations
+cd app && npx expo start --web       # Uygulama (web) -> http://localhost:8081
+cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 ```
+
+### Uygulama (`app/`)
+
+- Expo'ya özel kurallar `app/AGENTS.md` içinde: paketler `npx expo install` ile eklenir; Expo API'leri sürümden sürüme değiştiği için kod yazmadan önce SDK 58 dokümanına bakılır.
+- Sayfalar `app/src/app/` altında (Expo Router). Diğer kod `app/src/` altında: `api/` (API istekleri), `auth/` (oturum, token saklama, form doğrulama), `components/`, `theme.ts`.
+- Giriş koruması kök `_layout.tsx` içinde `Stack.Protected` ile. Token telefonda `expo-secure-store`, web'de `localStorage` içinde.
+- API adresi: `EXPO_PUBLIC_API_URL` ortam değişkeni, yoksa `http://localhost:5055`.
+- Tasarım: koyu tema, tek vurgu rengi limon yeşili (`#D4FF3A`), başlıklar Unbounded, metinler Manrope. Renk ve fontlar sadece `theme.ts`'den alınır.
+- Uygulama çoğunlukla telefonda kullanılacak. Ekranlar telefon genişliğine göre tasarlanır; bilgisayarda aynı sütun `CONTENT_MAX_WIDTH` (440) genişliğinde ortalanır, yani iki cihazda da ekran aynı görünür. Her ekran için `components/Screen.tsx` kullanılır.
+- API'deki doğrulama kuralları `app/src/auth/validation.ts` içinde tekrarlanır (hızlı geri bildirim için); biri değişirse diğeri de değişir.
 
 - Development ortamında bekleyen migration'lar API açılışında otomatik uygulanır (`Program.cs`).
 - Bağlantı cümlesi: `appsettings.Development.json` → `ConnectionStrings:Default`. İçindeki şifre yalnızca yerel geliştirme içindir; production'da ortam değişkenine taşınacak.
+- JWT anahtarı: `appsettings.Development.json` → `Jwt:Key` (yalnızca yerel geliştirme için). Production'da `Jwt__Key` ortam değişkeni; anahtar yoksa ya da 32 karakterden kısaysa API açılmaz.
+- CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).
+- Örnek istekler: `maxxing_app/maxxing_app.http` (kayıt, giriş, `/auth/me`).
 - Sağlık kontrolü: `GET /health` (veritabanı bağlantısını da kontrol eder).
 - OpenAPI dokümanı (development): `GET /openapi/v1.json`
 - Proje klasörünün adı `maxxing_app` kalmalı: Docker volume adı klasör adından türetiliyor, değişirse boş bir veritabanı açılır.
@@ -54,7 +69,7 @@ dotnet ef migrations add <Ad> --project maxxing_app --output-dir Data/Migrations
 Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 
 1. [x] Veritabanını ayağa kaldırıp API'ye bağlamak
-2. [ ] Kayıt ol / giriş yap: `User` tablosu, şifre hash'leme, JWT; Expo projesini `app/` altında oluşturup giriş/kayıt ekranları; API'de Expo web için CORS
+2. [x] Kayıt ol / giriş yap: `User` tablosu, şifre hash'leme, JWT; Expo projesini `app/` altında oluşturup giriş/kayıt ekranları; API'de Expo web için CORS
 3. [ ] Günlük kayıtlar ve notlar
 4. [ ] Rutinler ve seri sayacı
 5. [ ] Gruplar ve davet kodu
