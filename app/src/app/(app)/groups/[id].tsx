@@ -158,7 +158,18 @@ function MemberRow({ member, rank }: { member: GroupMember; rank: number }) {
       : `${member.completedCount}/${member.totalCount} tamamladı`;
 
   return (
-    <View style={[styles.member, member.todayCompleted && styles.memberDone, member.isMe && styles.memberMe]}>
+    <Pressable
+      onPress={() =>
+        member.isMe ? router.push('/profile') : router.push({ pathname: '/people/[id]', params: { id: member.userId } })
+      }
+      accessibilityRole="button"
+      style={(state) => [
+        styles.member,
+        member.todayCompleted && styles.memberDone,
+        member.isMe && styles.memberMe,
+        ((state as PressState).hovered || state.pressed) && styles.memberActive,
+      ]}
+    >
       <Text style={styles.rank}>{rank}</Text>
       <View style={[styles.avatar, member.todayCompleted && styles.avatarDone]}>
         {member.todayCompleted ? (
@@ -186,7 +197,7 @@ function MemberRow({ member, rank }: { member: GroupMember; rank: number }) {
         <Text style={[styles.streakNumber, member.streak === 0 && styles.streakZero]}>{member.streak}</Text>
         <Text style={styles.streakLabel}>gün</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -230,6 +241,7 @@ const styles = StyleSheet.create({
   },
   memberDone: { borderColor: 'rgba(212, 255, 58, 0.35)', backgroundColor: 'rgba(212, 255, 58, 0.05)' },
   memberMe: { borderStyle: 'dashed' },
+  memberActive: { borderColor: colors.borderStrong },
   rank: { width: 16, fontFamily: fonts.bodyHeavy, fontSize: 13, color: colors.textFaint, textAlign: 'center' },
   avatar: {
     width: 40,

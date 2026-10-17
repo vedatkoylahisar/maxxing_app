@@ -41,7 +41,7 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      await signIn(await register({ email: email.trim(), userName, password }));
+      await signIn(await register({ email: email.trim(), userName, password }), { isNew: true });
     } catch (error) {
       if (error instanceof ApiError) {
         setErrors(error.fieldErrors);

@@ -4,7 +4,6 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { ApiError } from '@/api/client';
 import { createRoutine, listRoutines, ROUTINE_SUGGESTIONS, type Routine, type RoutineInput } from '@/api/routines';
-import { useSession } from '@/auth/session';
 import { useAuthedApi } from '@/auth/useAuthedApi';
 import { Button } from '@/components/Button';
 import { Card, CardLabel } from '@/components/Card';
@@ -18,7 +17,6 @@ import { colors, fonts } from '@/theme';
 
 export default function Routines() {
   const api = useAuthedApi();
-  const { session, signOut } = useSession();
   const [routines, setRoutines] = useState<Routine[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
@@ -113,16 +111,6 @@ export default function Routines() {
           ) : null}
         </>
       )}
-
-      <View style={styles.account}>
-        <View style={styles.accountInfo}>
-          <CardLabel>HESAP</CardLabel>
-          <Text style={styles.accountName} numberOfLines={1}>
-            @{session?.user.userName}
-          </Text>
-        </View>
-        <Button title="Çıkış yap" variant="ghost" onPress={signOut} />
-      </View>
     </Screen>
   );
 }
@@ -162,14 +150,4 @@ const styles = StyleSheet.create({
 
   newButton: { marginTop: 18 },
   suggestions: { marginTop: 14, gap: 14 },
-
-  account: {
-    marginTop: 40,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    gap: 14,
-  },
-  accountInfo: { gap: 6 },
-  accountName: { fontFamily: fonts.displaySemi, fontSize: 18, color: colors.text },
 });

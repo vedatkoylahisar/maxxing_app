@@ -9,8 +9,11 @@ type Session = AuthResponse;
 type SessionContextValue = {
   isLoading: boolean;
   session: Session | null;
-  signIn: (auth: AuthResponse) => Promise<void>;
+  // Az önce kayıt olduysa true; ana sayfa bunu görünce karşılama ekranını açar.
+  isNewUser: boolean;
+  signIn: (auth: AuthResponse, options?: { isNew?: boolean }) => Promise<void>;
   signOut: () => Promise<void>;
+  clearNewUser: () => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -36,10 +39,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
 
-  const signIn = useCallback(async (auth: AuthResponse) => {
+  const [isNewUser, setIsNewUser] = useState(false);
+
+  const signIn = useCallback(async (auth: AuthResponse, options?: { isNew?: boolean }) => {
     await writeSession(JSON.stringify(auth));
+    setIsNewUser(options?.isNew ?? false);
     setSession(auth);
   }, []);
+
+  const clearNewUser = useCallback(() => setIsNewUser(false), []);
 
   const signOut = useCallback(async () => {
     await writeSession(null);
@@ -70,7 +78,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, [signOut]);
 
-  const value = useMemo(() => ({ isLoading, session, signIn, signOut }), [isLoading, session, signIn, signOut]);
+  const value = useMemo(
+    () => ({ isLoading, session, isNewUser, signIn, signOut, clearNewUser }),
+    [isLoading, session, isNewUser, signIn, signOut, clearNewUser],
+  );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

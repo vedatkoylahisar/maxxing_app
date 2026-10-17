@@ -1,12 +1,14 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
 import { getDay, getHistory, getToday, setEntry, setNote, type Day, type DaySummary } from '@/api/days';
 import { createRoutine, ROUTINE_SUGGESTIONS, type RoutineInput } from '@/api/routines';
+import { useSession } from '@/auth/session';
 import { useAuthedApi } from '@/auth/useAuthedApi';
 import { Brand } from '@/components/Brand';
+import { initialOf } from '@/components/ProfileView';
 import { Button } from '@/components/Button';
 import { Card, CardLabel } from '@/components/Card';
 import { FormMessage } from '@/components/FormMessage';
@@ -26,6 +28,16 @@ type Which = 'today' | 'yesterday';
 
 export default function Today() {
   const api = useAuthedApi();
+  const { session, isNewUser, clearNewUser } = useSession();
+  const { width } = useWindowDimensions();
+
+  // Az önce kayıt olduysa önce "Ne için buradasın?" ekranı.
+  useEffect(() => {
+    if (!isNewUser) return;
+    clearNewUser();
+    router.push('/welcome');
+  }, [isNewUser, clearNewUser]);
+
   const [today, setToday] = useState<string | null>(null);
   const [which, setWhich] = useState<Which>('today');
   const [day, setDay] = useState<Day | null>(null);
@@ -130,7 +142,8 @@ export default function Today() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Brand />
+        {/* Dar telefonlarda butonlara yer kalsın diye sadece logo işareti. */}
+        <Brand compact={width < 400} />
         <View style={styles.headerButtons}>
           {[
             { label: 'Gruplar', href: '/groups' as const },
@@ -148,6 +161,14 @@ export default function Today() {
               <Text style={styles.headerButtonText}>{item.label}</Text>
             </Pressable>
           ))}
+          <Pressable
+            onPress={() => router.push('/profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Profil"
+            style={(state) => [styles.avatar, ((state as PressState).hovered || state.pressed) && styles.avatarActive]}
+          >
+            <Text style={styles.avatarText}>{initialOf(session?.user.userName ?? '?')}</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -275,6 +296,16 @@ const styles = StyleSheet.create({
   headerButton: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1.5, borderColor: colors.border },
   headerButtonActive: { borderColor: colors.borderStrong, backgroundColor: colors.surface },
   headerButtonText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.text },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accent,
+  },
+  avatarActive: { opacity: 0.85 },
+  avatarText: { fontFamily: fonts.display, fontSize: 15, color: colors.accentInk },
 
   daySwitch: { marginTop: 28 },
   message: { marginTop: 16 },
