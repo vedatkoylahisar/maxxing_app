@@ -1,3 +1,5 @@
+import { Platform, type TextStyle } from 'react-native';
+
 export const colors = {
   bg: '#0B0B0C',
   surface: '#141416',
@@ -23,3 +25,8 @@ export const fonts = {
 
 // Ekranlar telefon genişliğinde tasarlanır; bilgisayarda aynı sütun ortalanır.
 export const CONTENT_MAX_WIDTH = 440;
+
+// Web'de metin kutularının tarayıcı odak çerçevesini kaldırır (odak, kutunun kenar rengiyle gösterilir)
+// ve varsayılan minimum genişliği sıfırlar ki dar kutulardan taşmasın.
+export const webInputReset: TextStyle =
+  Platform.OS === 'web' ? ({ outlineStyle: 'none', minWidth: 0 } as unknown as TextStyle) : {};

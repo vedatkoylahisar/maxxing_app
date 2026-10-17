@@ -14,7 +14,9 @@ public record RegisterRequest(
     [Required(ErrorMessage = "Şifre gerekli.")]
     [MinLength(8, ErrorMessage = "Şifre en az 8 karakter olmalı.")]
     [MaxLength(128, ErrorMessage = "Şifre en fazla 128 karakter olabilir.")]
-    string Password);
+    string Password,
+    // Cihazın IANA saat dilimi (örn. "Europe/Istanbul"). Gönderilmezse ya da geçersizse varsayılan kullanılır.
+    [MaxLength(64)] string? TimeZone = null);
 
 public record LoginRequest(
     [Required(ErrorMessage = "E-posta gerekli.")] string Email,

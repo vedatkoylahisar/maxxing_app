@@ -35,6 +35,7 @@ export async function apiFetch<T>(
     throw new ApiError('Sunucuya ulaşılamadı. Bağlantını kontrol edip tekrar dene.', 0);
   }
 
+  if (response.status === 204) return undefined as T;
   if (response.ok) return (await response.json()) as T;
 
   const problem = (await response.json().catch(() => ({}))) as ProblemDetails;

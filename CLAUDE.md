@@ -4,10 +4,13 @@ Kullanıcıyla Türkçe konuş.
 
 ## Ürün
 
-Kişisel gelişim takip uygulaması, sosyal yönü olan.
+Herkesin kullanabileceği, sosyal yönü olan bir gelişim takip uygulaması. Sadece "maxxing" (vücut, yüz) için değil: YKS'ye hazırlanan öğrenci, tıpçı, yazılımcı, iş, niş bir spor… herkes kendi alanında kullanır.
 
+- **Alan seçimi (kayıtta):** "Ne için buradasın?" diye sorulur. Seçenekler geniş (YKS, body maxxing, face maxxing, yazılım, tıp, iş, spor…), birden fazla seçilebilir, listede yoksa kullanıcı kendisi yazar. Seçime göre hazır rutin önerileri sunulur ("rutin ekle"). Alan şimdilik sadece öneri için kullanılır; keşfet / tanımadığın kişileri bulma yok.
 - **Günlük kayıt:** Kullanıcı her gün rutinlerini tikler (spor yaptı mı, kaç adım yürüdü, cilt bakımı vb.) ve isterse o güne not yazar.
-- **Rutinler:** Kullanıcı kendi rutinlerini tanımlar ("her gün spor", "her gün 10 bin adım").
+- **Rutinler:** Kullanıcı kendi rutinlerini tanımlar ve ayarlar: yaptım/yapmadım ("her gün spor") ya da sayı hedefi ("her gün 20 sayfa kitap", "10 bin adım").
+- **Günün notu:** Her zaman gizli, sadece sahibi görür (günlük gibi).
+- **Paylaşımlar ("bugün şunu öğrendim"):** Günün notundan ayrı, kısa yazılar. Yazarken kullanıcıya sorulur: "Grubunla mı paylaşmak istersin, yoksa sadece sana mı kalsın?" Paylaşımlar sadece gruplarda görünür; herkese açık akış yok. Tıpçı tıpla, yazılımcı yazılımla ilgili öğrendiklerini arkadaşlarıyla paylaşır.
 - **Seri (streak):** Aksatmadan geçen gün sayısı ("12 gündür hiç aksatmadın").
 - **Gruplar:** Kullanıcı grup kurar, bir davet kodu üretilir. Arkadaşı kodu girip katılır. Grupta üyelerin o günkü durumu görünür (kim yaptı, kim boş geçti). Amaç motivasyon ve biraz rekabet.
 - **Gizlilik:** Her şey varsayılan olarak sadece sahibine görünür. Paylaşım iki şekilde olur:
@@ -70,9 +73,11 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 
 1. [x] Veritabanını ayağa kaldırıp API'ye bağlamak
 2. [x] Kayıt ol / giriş yap: `User` tablosu, şifre hash'leme, JWT; Expo projesini `app/` altında oluşturup giriş/kayıt ekranları; API'de Expo web için CORS
-3. [ ] Günlük kayıtlar ve notlar
-4. [ ] Rutinler ve seri sayacı
-5. [ ] Gruplar ve davet kodu
-6. [ ] Paylaşım ve grup akışı
+3. [x] Rutinler, günlük tikleme, günün notu ve seri (3 ve 4. adım birleştirildi): iki rutin türü (yaptım/yapmadım, sayı hedefi); sadece bugün ve dün düzenlenebilir; gün, aktif rutinlerin hepsi tamamlanınca seriye sayılır; "bugün" kullanıcının saat dilimine göre (`User.TimeZone`); silinen rutin arşivlenir
+4. [ ] Gruplar ve davet kodu
+5. [ ] Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
+6. [ ] Kayıtta alan seçimi ("ne için buradasın?") ve alana göre rutin önerileri
 
-2. adım bitince giriş yapılabilen bir site, 6. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
+2. adım bitince giriş yapılabilen bir site, 5. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
+
+İleride belki: yapay zekâ sohbet asistanı, sesli komut ("bugün 5 bin adım attım"). Bunlar için şimdiden kod yazılmaz; ama her işlem API üzerinden yapıldığı sürece ileride aynı endpoint'leri çağırarak eklenebilirler. Bu yüzden iş kuralı istemciye konmaz.
