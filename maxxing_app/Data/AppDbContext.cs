@@ -9,6 +9,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Routine> Routines => Set<Routine>();
     public DbSet<RoutineEntry> RoutineEntries => Set<RoutineEntry>();
     public DbSet<DayNote> DayNotes => Set<DayNote>();
+    public DbSet<Group> Groups => Set<Group>();
+    public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,6 +43,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             note.Property(n => n.Text).HasMaxLength(2000);
             note.HasOne(n => n.User).WithMany().HasForeignKey(n => n.UserId).OnDelete(DeleteBehavior.Cascade);
             note.HasIndex(n => new { n.UserId, n.Date }).IsUnique();
+        });
+
+        modelBuilder.Entity<Group>(group =>
+        {
+            group.Property(g => g.Name).HasMaxLength(40);
+            group.Property(g => g.InviteCode).HasMaxLength(6);
+            group.HasIndex(g => g.InviteCode).IsUnique();
+        });
+
+        modelBuilder.Entity<GroupMember>(member =>
+        {
+            member.HasKey(m => new { m.GroupId, m.UserId });
+            member.HasOne(m => m.Group).WithMany(g => g.Members).HasForeignKey(m => m.GroupId).OnDelete(DeleteBehavior.Cascade);
+            member.HasOne(m => m.User).WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Cascade);
+            member.HasIndex(m => m.UserId);
         });
     }
 }

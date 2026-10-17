@@ -50,6 +50,54 @@ namespace maxxing_app.Data.Migrations
                     b.ToTable("DayNotes");
                 });
 
+            modelBuilder.Entity("maxxing_app.Models.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("maxxing_app.Models.GroupMember", b =>
+                {
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("GroupId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GroupMembers");
+                });
+
             modelBuilder.Entity("maxxing_app.Models.Routine", b =>
                 {
                     b.Property<Guid>("Id")
@@ -173,6 +221,25 @@ namespace maxxing_app.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("maxxing_app.Models.GroupMember", b =>
+                {
+                    b.HasOne("maxxing_app.Models.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("maxxing_app.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("maxxing_app.Models.Routine", b =>
                 {
                     b.HasOne("maxxing_app.Models.User", "User")
@@ -193,6 +260,11 @@ namespace maxxing_app.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Routine");
+                });
+
+            modelBuilder.Entity("maxxing_app.Models.Group", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("maxxing_app.Models.Routine", b =>
