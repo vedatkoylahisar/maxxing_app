@@ -37,6 +37,9 @@ dotnet ef migrations add <Ad> --project maxxing_app --output-dir Data/Migrations
 
 - Development ortamında bekleyen migration'lar API açılışında otomatik uygulanır (`Program.cs`).
 - Bağlantı cümlesi: `appsettings.Development.json` → `ConnectionStrings:Default`. İçindeki şifre yalnızca yerel geliştirme içindir; production'da ortam değişkenine taşınacak.
+- JWT anahtarı: `appsettings.Development.json` → `Jwt:Key` (yalnızca yerel geliştirme için). Production'da `Jwt__Key` ortam değişkeni; anahtar yoksa ya da 32 karakterden kısaysa API açılmaz.
+- CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).
+- Örnek istekler: `maxxing_app/maxxing_app.http` (kayıt, giriş, `/auth/me`).
 - Sağlık kontrolü: `GET /health` (veritabanı bağlantısını da kontrol eder).
 - OpenAPI dokümanı (development): `GET /openapi/v1.json`
 - Proje klasörünün adı `maxxing_app` kalmalı: Docker volume adı klasör adından türetiliyor, değişirse boş bir veritabanı açılır.
