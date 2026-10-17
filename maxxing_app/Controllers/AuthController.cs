@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Npgsql;
 
 namespace maxxing_app.Controllers;
@@ -35,6 +34,7 @@ public class AuthController(
             Id = Guid.CreateVersion7(),
             Email = email,
             UserName = userName,
+            TimeZone = request.TimeZone is { } zone && UserClock.IsValidTimeZone(zone) ? zone : UserClock.DefaultTimeZone,
             CreatedAt = DateTime.UtcNow,
         };
         user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
@@ -79,10 +79,7 @@ public class AuthController(
     [HttpGet("me")]
     public async Task<ActionResult<UserResponse>> Me()
     {
-        if (!Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var userId))
-            return Unauthorized();
-
-        var user = await db.Users.FindAsync(userId);
+        var user = await db.Users.FindAsync(User.GetUserId());
         if (user is null)
             return Unauthorized();
 

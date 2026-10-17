@@ -41,9 +41,6 @@
       "expo-font"
     ],
     "scheme": "maxxing",
-    "backgroundColor": "#0B0B0C",
-    "experiments": {
-      "typedRoutes": true
-    }
+    "backgroundColor": "#0B0B0C"
   }
 }

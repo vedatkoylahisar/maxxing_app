@@ -12,5 +12,8 @@ public class User
 
     public string PasswordHash { get; set; } = "";
 
+    // IANA saat dilimi (örn. "Europe/Istanbul"). "Bugün"ün hangi gün olduğu buna göre hesaplanır.
+    public string TimeZone { get; set; } = UserClock.DefaultTimeZone;
+
     public DateTime CreatedAt { get; set; }
 }

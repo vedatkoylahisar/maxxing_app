@@ -1,7 +1,7 @@
 import { useState, type Ref } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputInstance, type TextInputProps } from 'react-native';
 
-import { colors, fonts } from '@/theme';
+import { colors, fonts, webInputReset } from '@/theme';
 
 type Props = TextInputProps & {
   ref?: Ref<TextInputInstance>;
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     fontSize: 16,
     color: colors.text,
-    outlineWidth: 0,
+    ...webInputReset,
   },
   toggle: { paddingLeft: 12 },
   toggleText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.textMuted },

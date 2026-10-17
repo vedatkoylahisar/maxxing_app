@@ -14,7 +14,9 @@ export type AuthResponse = {
 };
 
 export function register(body: { email: string; userName: string; password: string }) {
-  return apiFetch<AuthResponse>('/auth/register', { method: 'POST', body });
+  // "Bugün"ün hangi gün olduğu API'de bu saat dilimine göre hesaplanır.
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return apiFetch<AuthResponse>('/auth/register', { method: 'POST', body: { ...body, timeZone } });
 }
 
 export function login(body: { email: string; password: string }) {
