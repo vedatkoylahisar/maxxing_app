@@ -2,11 +2,12 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, fonts } from '@/theme';
 
-export function Brand() {
+// compact: sadece işaret, yazı yok (dar başlıklarda).
+export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <View style={styles.row}>
       <View style={styles.mark} />
-      <Text style={styles.word}>maxxing</Text>
+      {compact ? null : <Text style={styles.word}>maxxing</Text>}
     </View>
   );
 }
