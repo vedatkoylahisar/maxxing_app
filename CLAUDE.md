@@ -78,8 +78,9 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 3. [x] Rutinler, günlük tikleme, günün notu ve seri (3 ve 4. adım birleştirildi): iki rutin türü (yaptım/yapmadım, sayı hedefi); sadece bugün ve dün düzenlenebilir; gün, aktif rutinlerin hepsi tamamlanınca seriye sayılır; "bugün" kullanıcının saat dilimine göre (`User.TimeZone`); silinen rutin arşivlenir
 4. [x] Gruplar ve davet kodu: grup kur, 6 haneli kodla katıl, ayrıl, sahip kodu yeniler; grup sayfasında üyelerin sadece günlük özeti (x/y tamamladı, seri) görünür
 5. [x] Profil + alan seçimi: görünen ad, kısa bio, alanlar (kayıtta "ne için buradasın?" sorulur, profilden değiştirilir; seçime göre rutin önerileri), istatistikler (şu anki seri, en uzun seri, toplam tamamlanan gün), ayarlar (çıkış, şifre değiştir). Fotoğraf şimdilik yok, baş harf gösterilir. Grupta bir üyeye dokununca profil özeti görünür (ad, bio, alanlar, istatistikler); rutin adları ve notlar yine gizli.
-6. [ ] Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
+6. [ ] **Sıradaki iş:** E-posta doğrulama. Kayıttan sonra e-postaya 6 haneli kod gider (15 dk geçerli, "kodu tekrar gönder" var); kullanıcı kodu girene kadar uygulamaya giremez: profil oluşturma ("Ne için buradasın?"), rutinler, gruplar hiçbiri açılmaz, sadece "kodu gir" ekranı görünür. API bunu zorlar (onaysız hesabın token'ı korumalı endpoint'lerde reddedilir), istemci sadece ekranı gösterir. Geliştirmede mailler Docker'da Mailpit'e gider (`localhost:8025`, gerçek adrese gitmez); production'da Resend/Brevo/SendGrid gibi bir servis ve alan adı gerekir. Mevcut hesaplar (`vedatkoylahisar`) onaylı sayılır. İleride "şifremi unuttum" da aynı altyapıyı kullanır.
+7. [ ] Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
 
-2. adım bitince giriş yapılabilen bir site, 6. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
+2. adım bitince giriş yapılabilen bir site, 7. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
 
 İleride belki: yapay zekâ sohbet asistanı, sesli komut ("bugün 5 bin adım attım"). Bunlar için şimdiden kod yazılmaz; ama her işlem API üzerinden yapıldığı sürece ileride aynı endpoint'leri çağırarak eklenebilirler. Bu yüzden iş kuralı istemciye konmaz.
