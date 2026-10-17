@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17
+    container_name: maxxing_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: maxxing
+      POSTGRES_USER: maxxing
+      POSTGRES_PASSWORD: maxxing_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - maxxing_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maxxing -d maxxing"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  maxxing_pgdata:
