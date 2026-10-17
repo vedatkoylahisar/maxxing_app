@@ -48,6 +48,7 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 - API adresi: `EXPO_PUBLIC_API_URL` ortam değişkeni, yoksa `http://localhost:5055`.
 - Tasarım: koyu tema, tek vurgu rengi limon yeşili (`#D4FF3A`), başlıklar Unbounded, metinler Manrope. Renk ve fontlar sadece `theme.ts`'den alınır.
 - Uygulama çoğunlukla telefonda kullanılacak. Ekranlar telefon genişliğine göre tasarlanır; bilgisayarda aynı sütun `CONTENT_MAX_WIDTH` (440) genişliğinde ortalanır, yani iki cihazda da ekran aynı görünür. Her ekran için `components/Screen.tsx` kullanılır.
+- Bu makinede Expo (Metro) dosya değişikliklerini her zaman algılamıyor: değişiklik ekranda görünmüyorsa sunucuyu `npx expo start --web --clear` ile yeniden başlat.
 - API'deki doğrulama kuralları `app/src/auth/validation.ts` içinde tekrarlanır (hızlı geri bildirim için); biri değişirse diğeri de değişir.
 
 - Development ortamında bekleyen migration'lar API açılışında otomatik uygulanır (`Program.cs`).
@@ -74,10 +75,10 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 1. [x] Veritabanını ayağa kaldırıp API'ye bağlamak
 2. [x] Kayıt ol / giriş yap: `User` tablosu, şifre hash'leme, JWT; Expo projesini `app/` altında oluşturup giriş/kayıt ekranları; API'de Expo web için CORS
 3. [x] Rutinler, günlük tikleme, günün notu ve seri (3 ve 4. adım birleştirildi): iki rutin türü (yaptım/yapmadım, sayı hedefi); sadece bugün ve dün düzenlenebilir; gün, aktif rutinlerin hepsi tamamlanınca seriye sayılır; "bugün" kullanıcının saat dilimine göre (`User.TimeZone`); silinen rutin arşivlenir
-4. [ ] Gruplar ve davet kodu
-5. [ ] Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
-6. [ ] Kayıtta alan seçimi ("ne için buradasın?") ve alana göre rutin önerileri
+4. [x] Gruplar ve davet kodu: grup kur, 6 haneli kodla katıl, ayrıl, sahip kodu yeniler; grup sayfasında üyelerin sadece günlük özeti (x/y tamamladı, seri) görünür
+5. [ ] Profil + alan seçimi: görünen ad, kısa bio, alanlar (kayıtta "ne için buradasın?" sorulur, profilden değiştirilir; seçime göre rutin önerileri), istatistikler (şu anki seri, en uzun seri, toplam tamamlanan gün), ayarlar (çıkış, şifre değiştir). Fotoğraf şimdilik yok, baş harf gösterilir. Grupta bir üyeye dokununca profil özeti görünür (ad, bio, alanlar, istatistikler); rutin adları ve notlar yine gizli.
+6. [ ] Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
 
-2. adım bitince giriş yapılabilen bir site, 5. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
+2. adım bitince giriş yapılabilen bir site, 6. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
 
 İleride belki: yapay zekâ sohbet asistanı, sesli komut ("bugün 5 bin adım attım"). Bunlar için şimdiden kod yazılmaz; ama her işlem API üzerinden yapıldığı sürece ileride aynı endpoint'leri çağırarak eklenebilirler. Bu yüzden iş kuralı istemciye konmaz.
