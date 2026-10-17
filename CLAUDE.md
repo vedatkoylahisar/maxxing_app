@@ -52,6 +52,7 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 - API'deki doğrulama kuralları `app/src/auth/validation.ts` içinde tekrarlanır (hızlı geri bildirim için); biri değişirse diğeri de değişir.
 
 - Development ortamında bekleyen migration'lar API açılışında otomatik uygulanır (`Program.cs`).
+- Migration ekledikten sonra API'yi `--no-build` ile başlatma: yeni migration derlenmemiş olur ve API "pending model changes" hatasıyla açılmaz.
 - Bağlantı cümlesi: `appsettings.Development.json` → `ConnectionStrings:Default`. İçindeki şifre yalnızca yerel geliştirme içindir; production'da ortam değişkenine taşınacak.
 - JWT anahtarı: `appsettings.Development.json` → `Jwt:Key` (yalnızca yerel geliştirme için). Production'da `Jwt__Key` ortam değişkeni; anahtar yoksa ya da 32 karakterden kısaysa API açılmaz.
 - CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).

@@ -35,6 +35,29 @@ public class ProgressCalculator(IReadOnlyList<Routine> routines)
 
     public int RoutineStreak(Routine routine, DateOnly today) => CountBack(today, d => IsCompleted(routine, d));
 
+    // Profil istatistikleri: ilk rutinden bugüne tamamlanan gün sayısı ve en uzun kesintisiz seri.
+    public (int CompletedDays, int LongestStreak) History(DateOnly today)
+    {
+        if (routines.Count == 0) return (0, 0);
+
+        int completedDays = 0, longest = 0, run = 0;
+        for (var day = routines.Min(r => r.StartDate); day <= today; day = day.AddDays(1))
+        {
+            if (IsDayCompleted(day))
+            {
+                completedDays++;
+                run++;
+                longest = Math.Max(longest, run);
+            }
+            else if (day != today)
+            {
+                // Bugün henüz bitmediği için seriyi bozmaz.
+                run = 0;
+            }
+        }
+        return (completedDays, longest);
+    }
+
     private int CountBack(DateOnly today, Func<DateOnly, bool> isCompleted)
     {
         if (routines.Count == 0) return 0;

@@ -19,6 +19,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             user.Property(u => u.Email).HasMaxLength(256);
             user.Property(u => u.UserName).HasMaxLength(20);
             user.Property(u => u.TimeZone).HasMaxLength(64).HasDefaultValue(UserClock.DefaultTimeZone);
+            user.Property(u => u.DisplayName).HasMaxLength(40);
+            user.Property(u => u.Bio).HasMaxLength(160);
+            user.Property(u => u.Areas).HasDefaultValueSql("'{}'");
             user.HasIndex(u => u.Email).IsUnique();
             user.HasIndex(u => u.UserName).IsUnique();
         });
