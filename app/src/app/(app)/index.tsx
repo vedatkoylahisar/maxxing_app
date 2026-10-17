@@ -131,13 +131,24 @@ export default function Today() {
     <Screen>
       <View style={styles.header}>
         <Brand />
-        <Pressable
-          onPress={() => router.push('/routines')}
-          accessibilityRole="button"
-          style={(state) => [styles.headerButton, ((state as PressState).hovered || state.pressed) && styles.headerButtonActive]}
-        >
-          <Text style={styles.headerButtonText}>Rutinler</Text>
-        </Pressable>
+        <View style={styles.headerButtons}>
+          {[
+            { label: 'Gruplar', href: '/groups' as const },
+            { label: 'Rutinler', href: '/routines' as const },
+          ].map((item) => (
+            <Pressable
+              key={item.href}
+              onPress={() => router.push(item.href)}
+              accessibilityRole="button"
+              style={(state) => [
+                styles.headerButton,
+                ((state as PressState).hovered || state.pressed) && styles.headerButtonActive,
+              ]}
+            >
+              <Text style={styles.headerButtonText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       <View style={styles.daySwitch}>
@@ -260,7 +271,8 @@ function StreakCard({ day, history, today }: { day: Day; history: DaySummary[]; 
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerButton: { paddingVertical: 9, paddingHorizontal: 15, borderRadius: 999, borderWidth: 1.5, borderColor: colors.border },
+  headerButtons: { flexDirection: 'row', gap: 8 },
+  headerButton: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1.5, borderColor: colors.border },
   headerButtonActive: { borderColor: colors.borderStrong, backgroundColor: colors.surface },
   headerButtonText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.text },
 

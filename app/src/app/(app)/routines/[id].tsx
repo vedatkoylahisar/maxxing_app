@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
 import { createRoutine, deleteRoutine, listRoutines, updateRoutine, type RoutineType } from '@/api/routines';
@@ -12,6 +12,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Segmented } from '@/components/Segmented';
 import { TextField } from '@/components/TextField';
+import { confirm } from '@/confirm';
 import { colors, fonts } from '@/theme';
 
 // "/routines/new" yeni rutin, "/routines/<id>" düzenleme.
@@ -82,16 +83,7 @@ export default function RoutineForm() {
 
   async function remove() {
     const question = `"${name}" silinsin mi? Geçmiş günlerdeki kayıtların ve serin korunur.`;
-    const confirmed =
-      Platform.OS === 'web'
-        ? window.confirm(question)
-        : await new Promise<boolean>((resolve) =>
-            Alert.alert('Rutini sil', question, [
-              { text: 'Vazgeç', style: 'cancel', onPress: () => resolve(false) },
-              { text: 'Sil', style: 'destructive', onPress: () => resolve(true) },
-            ]),
-          );
-    if (!confirmed) return;
+    if (!(await confirm('Rutini sil', question, 'Sil'))) return;
 
     setDeleting(true);
     try {
