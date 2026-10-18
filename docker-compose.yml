@@ -7,8 +7,9 @@ services:
       POSTGRES_DB: maxxing
       POSTGRES_USER: maxxing
       POSTGRES_PASSWORD: maxxing_dev_password
+    # Sadece bu bilgisayardan erişilir; aynı ağdaki başkaları bağlanamaz (şifre repoda açık).
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - maxxing_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +24,8 @@ services:
     container_name: maxxing_mail
     restart: unless-stopped
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
 
 volumes:
   maxxing_pgdata:
