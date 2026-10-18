@@ -1,3 +1,5 @@
+using maxxing_app.Localization;
+
 namespace maxxing_app.Models;
 
 public class User
@@ -22,6 +24,9 @@ public class User
 
     // IANA saat dilimi (örn. "Europe/Istanbul"). "Bugün"ün hangi gün olduğu buna göre hesaplanır.
     public string TimeZone { get; set; } = UserClock.DefaultTimeZone;
+
+    // "tr" ya da "en": kullanıcının uygulamayı en son kullandığı dil (kayıt ve girişte güncellenir). Mailler bu dilde gider.
+    public string Language { get; set; } = Languages.Default;
 
     // Boşsa e-posta henüz onaylanmamıştır; kullanıcı kodu girene kadar uygulamaya giremez.
     public DateTime? EmailVerifiedAt { get; set; }

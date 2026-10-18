@@ -4,15 +4,15 @@ using maxxing_app.Profiles;
 namespace maxxing_app.Contracts;
 
 public record UpdateProfileRequest(
-    [MaxLength(40, ErrorMessage = "Ad en fazla 40 karakter olabilir.")] string? DisplayName,
-    [MaxLength(160, ErrorMessage = "Bio en fazla 160 karakter olabilir.")] string? Bio,
-    [MaxLength(6, ErrorMessage = "En fazla 6 alan seçebilirsin.")] List<string>? Areas);
+    [MaxLength(40, ErrorMessage = "DisplayNameTooLong")] string? DisplayName,
+    [MaxLength(160, ErrorMessage = "BioTooLong")] string? Bio,
+    [MaxLength(6, ErrorMessage = "TooManyAreas")] List<string>? Areas);
 
 public record ChangePasswordRequest(
-    [Required(ErrorMessage = "Mevcut şifreni gir.")] string CurrentPassword,
-    [Required(ErrorMessage = "Yeni şifre gerekli.")]
-    [MinLength(8, ErrorMessage = "Şifre en az 8 karakter olmalı.")]
-    [MaxLength(128, ErrorMessage = "Şifre en fazla 128 karakter olabilir.")]
+    [Required(ErrorMessage = "CurrentPasswordRequired")] string CurrentPassword,
+    [Required(ErrorMessage = "NewPasswordRequired")]
+    [MinLength(8, ErrorMessage = "PasswordTooShort")]
+    [MaxLength(128, ErrorMessage = "PasswordTooLong")]
     string NewPassword);
 
 // Key: listedeki alanın anahtarı; kullanıcının kendi yazdığı alanda null.

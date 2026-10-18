@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -19,6 +20,7 @@ import { colors, fonts } from '@/theme';
 export default function RoutineForm() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
+  const { t } = useTranslation();
   const api = useAuthedApi();
 
   const [loaded, setLoaded] = useState(isNew);
@@ -46,14 +48,14 @@ export default function RoutineForm() {
         setUnit(routine.unit ?? '');
         setLoaded(true);
       })
-      .catch((error) => setMessage(error instanceof ApiError ? error.message : 'Rutin yüklenemedi.'));
-  }, [api, id, isNew]);
+      .catch((error) => setMessage(error instanceof ApiError ? error.message : t('routineForm.loadFailed')));
+  }, [api, id, isNew, t]);
 
   async function save() {
     const targetValue = parseInt(target.replace(/\D/g, ''), 10);
     const next: Record<string, string | undefined> = {
-      name: name.trim() ? undefined : 'Rutin adı gerekli.',
-      target: type === 'count' && !(targetValue >= 1) ? 'Bir hedef gir (örn. 10000).' : undefined,
+      name: name.trim() ? undefined : t('routineForm.nameRequired'),
+      target: type === 'count' && !(targetValue >= 1) ? t('routineForm.targetRequired') : undefined,
     };
     setErrors(next);
     setMessage(null);
@@ -75,40 +77,40 @@ export default function RoutineForm() {
         setErrors(error.fieldErrors);
         setMessage(error.message);
       } else {
-        setMessage('Kaydedilemedi.');
+        setMessage(t('common.couldNotSave'));
       }
       setSaving(false);
     }
   }
 
   async function remove() {
-    const question = `"${name}" silinsin mi? Geçmiş günlerdeki kayıtların ve serin korunur.`;
-    if (!(await confirm('Rutini sil', question, 'Sil'))) return;
+    const question = t('routineForm.deleteAsk', { name });
+    if (!(await confirm(t('routineForm.deleteTitle'), question, t('routineForm.deleteConfirm')))) return;
 
     setDeleting(true);
     try {
       await api((t) => deleteRoutine(t, id));
       router.back();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Silinemedi.');
+      setMessage(error instanceof ApiError ? error.message : t('routineForm.deleteFailed'));
       setDeleting(false);
     }
   }
 
   return (
     <Screen>
-      <ScreenHeader title={isNew ? 'Yeni rutin' : 'Rutini düzenle'} />
+      <ScreenHeader title={isNew ? t('routineForm.newTitle') : t('routineForm.editTitle')} />
 
       {!loaded ? (
         <View style={styles.loading}>{message ? <FormMessage message={message} /> : <ActivityIndicator color={colors.accent} />}</View>
       ) : (
         <View style={styles.form}>
           <TextField
-            label="Ad"
+            label={t('routineForm.name')}
             value={name}
             onChangeText={setName}
             error={errors.name}
-            placeholder="Spor, kitap, meditasyon…"
+            placeholder={t('routineForm.namePlaceholder')}
             maxLength={40}
             autoFocus={isNew}
             returnKeyType="done"
@@ -116,19 +118,19 @@ export default function RoutineForm() {
 
           {isNew ? (
             <View style={styles.typeBlock}>
-              <Text style={styles.label}>Nasıl takip edilecek?</Text>
+              <Text style={styles.label}>{t('routineForm.howTracked')}</Text>
               <Segmented
                 options={[
-                  { value: 'check', label: 'Yaptım / yapmadım' },
-                  { value: 'count', label: 'Sayı hedefi' },
+                  { value: 'check', label: t('routineForm.typeCheck') },
+                  { value: 'count', label: t('routineForm.typeCount') },
                 ]}
                 value={type}
                 onChange={setType}
               />
               <Text style={styles.hint}>
                 {type === 'check'
-                  ? 'Gün içinde bir kere tiklersin. Spor, cilt bakımı gibi.'
-                  : 'Gün içinde miktar girersin; hedefe ulaşınca tamamlanır. Adım, su, sayfa gibi.'}
+                  ? t('routineForm.checkHint')
+                  : t('routineForm.countHint')}
               </Text>
             </View>
           ) : null}
@@ -137,7 +139,7 @@ export default function RoutineForm() {
             <View style={styles.countFields}>
               <View style={styles.targetField}>
                 <TextField
-                  label="Günlük hedef"
+                  label={t('routineForm.dailyTarget')}
                   value={target}
                   onChangeText={(text) => setTarget(text.replace(/\D/g, ''))}
                   error={errors.target}
@@ -149,11 +151,11 @@ export default function RoutineForm() {
               </View>
               <View style={styles.unitField}>
                 <TextField
-                  label="Birim"
+                  label={t('routineForm.unit')}
                   value={unit}
                   onChangeText={setUnit}
                   error={errors.unit}
-                  placeholder="adım"
+                  placeholder={t('routineForm.unitPlaceholder')}
                   maxLength={16}
                 />
               </View>
@@ -161,7 +163,7 @@ export default function RoutineForm() {
           ) : null}
 
           <FormMessage message={message} />
-          <Button title={isNew ? 'Rutini ekle' : 'Kaydet'} onPress={save} loading={saving} />
+          <Button title={isNew ? t('routineForm.add') : t('common.save')} onPress={save} loading={saving} />
 
           {!isNew ? (
             <Pressable
@@ -170,7 +172,7 @@ export default function RoutineForm() {
               accessibilityRole="button"
               style={(state) => [styles.delete, ((state as PressState).hovered || state.pressed) && styles.deleteActive]}
             >
-              {deleting ? <ActivityIndicator color={colors.danger} /> : <Text style={styles.deleteText}>Rutini sil</Text>}
+              {deleting ? <ActivityIndicator color={colors.danger} /> : <Text style={styles.deleteText}>{t('routineForm.deleteTitle')}</Text>}
             </Pressable>
           ) : null}
         </View>

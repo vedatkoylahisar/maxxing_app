@@ -7,6 +7,7 @@ using maxxing_app.Progress;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Npgsql;
 
 namespace maxxing_app.Controllers;
@@ -14,7 +15,7 @@ namespace maxxing_app.Controllers;
 [ApiController]
 [Authorize]
 [Route("groups")]
-public class GroupsController(AppDbContext db) : ControllerBase
+public class GroupsController(AppDbContext db, IStringLocalizer<SharedResource> localizer) : ControllerBase
 {
     private const int MaxGroupsPerUser = 10;
     private const int MaxMembersPerGroup = 50;
@@ -43,11 +44,11 @@ public class GroupsController(AppDbContext db) : ControllerBase
         var name = request.Name.Trim();
         if (name.Length == 0)
         {
-            ModelState.AddModelError(nameof(request.Name), "Grup adı gerekli.");
+            ModelState.AddModelError(nameof(request.Name), localizer["GroupNameRequired"]);
             return ValidationProblem(ModelState);
         }
         if (await MembershipCount(userId) >= MaxGroupsPerUser)
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: $"En fazla {MaxGroupsPerUser} grupta olabilirsin.");
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["GroupLimit", MaxGroupsPerUser]);
 
         var now = DateTime.UtcNow;
         var group = new Group
@@ -86,15 +87,15 @@ public class GroupsController(AppDbContext db) : ControllerBase
 
         var group = await db.Groups.Include(g => g.Members).SingleOrDefaultAsync(g => g.InviteCode == code);
         if (group is null)
-            return Problem(statusCode: StatusCodes.Status404NotFound, title: "Bu koda ait bir grup yok.");
+            return Problem(statusCode: StatusCodes.Status404NotFound, title: localizer["GroupNotFoundByCode"]);
 
         // Zaten üyeyse hata verme, grubu dön.
         if (group.Members.All(m => m.UserId != userId))
         {
             if (group.Members.Count >= MaxMembersPerGroup)
-                return Problem(statusCode: StatusCodes.Status400BadRequest, title: "Bu grup dolu.");
+                return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["GroupFull"]);
             if (await MembershipCount(userId) >= MaxGroupsPerUser)
-                return Problem(statusCode: StatusCodes.Status400BadRequest, title: $"En fazla {MaxGroupsPerUser} grupta olabilirsin.");
+                return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["GroupLimit", MaxGroupsPerUser]);
 
             group.Members.Add(new GroupMember { UserId = userId, JoinedAt = DateTime.UtcNow });
             try
@@ -180,7 +181,7 @@ public class GroupsController(AppDbContext db) : ControllerBase
         var group = await db.Groups.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id && g.Members.Any(m => m.UserId == userId));
         if (group is null) return NotFound();
         if (group.OwnerId != userId)
-            return Problem(statusCode: StatusCodes.Status403Forbidden, title: "Davet kodunu sadece grubun sahibi yenileyebilir.");
+            return Problem(statusCode: StatusCodes.Status403Forbidden, title: localizer["OnlyOwnerCanResetCode"]);
 
         for (var attempt = 0; ; attempt++)
         {

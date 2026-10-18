@@ -2,9 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import { getMe, type AuthResponse } from '@/api/auth';
 import { ApiError } from '@/api/client';
-import { readSession, writeSession } from './storage';
+import { readItem, writeItem } from '@/storage';
 
 type Session = AuthResponse;
+
+const SESSION_KEY = 'maxxing.session';
+const readSession = () => readItem(SESSION_KEY);
+const writeSession = (value: string | null) => writeItem(SESSION_KEY, value);
 
 type SessionContextValue = {
   isLoading: boolean;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { DayRoutine } from '@/api/days';
@@ -24,6 +25,7 @@ export function RoutineRow({ routine, editable, onSetValue }: Props) {
 }
 
 function CheckRow({ routine, editable, onSetValue }: Props) {
+  const { t } = useTranslation();
   const done = routine.completed;
   const [pop] = useState(() => new Animated.Value(done ? 1 : 0));
 
@@ -55,7 +57,7 @@ function CheckRow({ routine, editable, onSetValue }: Props) {
         <Text style={[styles.name, done && styles.nameDone]} numberOfLines={1}>
           {routine.name}
         </Text>
-        <Text style={styles.sub}>{done ? 'Tamamlandı' : 'Dokun ve tikle'}</Text>
+        <Text style={styles.sub}>{done ? t('routineRow.done') : t('routineRow.tapToCheck')}</Text>
       </View>
       <Streak days={routine.streak} />
     </Pressable>
@@ -63,6 +65,7 @@ function CheckRow({ routine, editable, onSetValue }: Props) {
 }
 
 function CountRow({ routine, editable, onSetValue }: Props) {
+  const { t } = useTranslation();
   const target = routine.target ?? 1;
   const done = routine.completed;
   const [focused, setFocused] = useState(false);
@@ -91,7 +94,7 @@ function CountRow({ routine, editable, onSetValue }: Props) {
             {routine.name}
           </Text>
           <Text style={styles.sub}>
-            Hedef {formatNumber(target)}
+            {t('routineRow.target', { value: formatNumber(target) })}
             {routine.unit ? ` ${routine.unit}` : ''}
           </Text>
         </View>
@@ -131,12 +134,12 @@ function CountRow({ routine, editable, onSetValue }: Props) {
             accessibilityRole="button"
             style={(state) => [styles.fill, ((state as PressState).hovered || state.pressed) && styles.fillActive]}
           >
-            <Text style={styles.fillText}>Hedefe ulaştım</Text>
+            <Text style={styles.fillText}>{t('routineRow.reachedTarget')}</Text>
           </Pressable>
         ) : done ? (
           <View style={styles.doneChip}>
             <Checkmark size={13} color={colors.accentInk} weight={2.5} />
-            <Text style={styles.doneChipText}>Tamam</Text>
+            <Text style={styles.doneChipText}>{t('routineRow.doneShort')}</Text>
           </View>
         ) : null}
       </View>
@@ -145,11 +148,12 @@ function CountRow({ routine, editable, onSetValue }: Props) {
 }
 
 function Streak({ days }: { days: number }) {
+  const { t } = useTranslation();
   if (days <= 0) return null;
   return (
     <View style={styles.streak}>
       <View style={styles.streakDot} />
-      <Text style={styles.streakText}>{days} gün</Text>
+      <Text style={styles.streakText}>{t('common.days', { count: days })}</Text>
     </View>
   );
 }

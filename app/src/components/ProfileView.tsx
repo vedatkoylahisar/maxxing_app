@@ -1,16 +1,19 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Profile } from '@/api/profile';
+import { formatMonthYear, upperFirst } from '@/dates';
 import { colors, fonts } from '@/theme';
 
 export function initialOf(name: string) {
-  return name.charAt(0).toLocaleUpperCase('tr-TR');
+  return upperFirst(name);
 }
 
 // Hem kendi profilinde hem grupta bir arkadaşın profilinde kullanılan üst kısım.
 export function ProfileView({ profile }: { profile: Profile }) {
+  const { t } = useTranslation();
   const name = profile.displayName ?? profile.userName;
-  const since = new Date(profile.stats.memberSince).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  const since = formatMonthYear(profile.stats.memberSince);
 
   return (
     <View>
@@ -39,11 +42,11 @@ export function ProfileView({ profile }: { profile: Profile }) {
       ) : null}
 
       <View style={styles.stats}>
-        <Stat value={profile.stats.currentStreak} label="Şu anki seri" accent />
-        <Stat value={profile.stats.longestStreak} label="En uzun seri" />
-        <Stat value={profile.stats.completedDays} label="Tamam gün" />
+        <Stat value={profile.stats.currentStreak} label={t('profileView.currentStreak')} accent />
+        <Stat value={profile.stats.longestStreak} label={t('profileView.longestStreak')} />
+        <Stat value={profile.stats.completedDays} label={t('profileView.completedDays')} />
       </View>
-      <Text style={styles.since}>{since} tarihinden beri burada</Text>
+      <Text style={styles.since}>{t('profileView.since', { date: since })}</Text>
     </View>
   );
 }

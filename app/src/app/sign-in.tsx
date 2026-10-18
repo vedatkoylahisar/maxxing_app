@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type TextInputInstance } from 'react-native';
 
 import { login } from '@/api/auth';
@@ -18,6 +19,7 @@ import { colors, fonts } from '@/theme';
 const LAST_30_DAYS = [0, 2, 1, 0, 3, 2, 0, 1, 3, 0, 2, 3, 1, 0, 2, 3, 3, 0, 2, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3];
 
 export default function SignIn() {
+  const { t } = useTranslation();
   const { signIn } = useSession();
   const passwordRef = useRef<TextInputInstance>(null);
 
@@ -28,7 +30,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   async function submit() {
-    const next = { email: validateEmail(email), password: password ? undefined : 'Şifre gerekli.' };
+    const next = { email: validateEmail(email), password: password ? undefined : t('validation.passwordRequired') };
     setErrors(next);
     setMessage(null);
     if (next.email || next.password) return;
@@ -41,7 +43,7 @@ export default function SignIn() {
         setErrors(error.fieldErrors);
         setMessage(error.message);
       } else {
-        setMessage('Bir şeyler ters gitti.');
+        setMessage(t('common.somethingWrong'));
       }
       setLoading(false);
     }
@@ -53,27 +55,28 @@ export default function SignIn() {
 
       <View style={styles.hero}>
         <View style={styles.gridHeader}>
-          <Text style={styles.gridLabel}>SON 30 GÜN</Text>
+          <Text style={styles.gridLabel}>{t('signIn.gridLabel')}</Text>
           <View style={styles.streakPill}>
             <View style={styles.streakDot} />
-            <Text style={styles.streakText}>12 günlük seri</Text>
+            <Text style={styles.streakText}>{t('signIn.streakPill')}</Text>
           </View>
         </View>
         <HabitGrid levels={LAST_30_DAYS} pulseIndex={LAST_30_DAYS.length - 1} />
       </View>
 
       <Text style={styles.title}>
-        Her gün{'\n'}biraz daha <Text style={styles.titleAccent}>iyi.</Text>
+        {t('signIn.title')}
+        <Text style={styles.titleAccent}>{t('signIn.titleAccent')}</Text>
       </Text>
-      <Text style={styles.subtitle}>Rutinlerini tikle, serini koru, arkadaşlarınla yarış.</Text>
+      <Text style={styles.subtitle}>{t('signIn.subtitle')}</Text>
 
       <View style={styles.form}>
         <TextField
-          label="E-posta"
+          label={t('auth.email')}
           value={email}
           onChangeText={setEmail}
           error={errors.email}
-          placeholder="sen@ornek.com"
+          placeholder={t('auth.emailPlaceholder')}
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -82,7 +85,7 @@ export default function SignIn() {
         />
         <TextField
           ref={passwordRef}
-          label="Şifre"
+          label={t('auth.password')}
           value={password}
           onChangeText={setPassword}
           error={errors.password}
@@ -93,13 +96,13 @@ export default function SignIn() {
           onSubmitEditing={submit}
         />
         <FormMessage message={message} />
-        <Button title="Giriş yap" onPress={submit} loading={loading} />
+        <Button title={t('signIn.submit')} onPress={submit} loading={loading} />
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Hesabın yok mu? </Text>
+        <Text style={styles.footerText}>{t('signIn.noAccount')}</Text>
         <Link href="/sign-up" replace style={styles.footerLink}>
-          Kayıt ol
+          {t('signIn.signUpLink')}
         </Link>
       </View>
     </Screen>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, fonts, webInputReset } from '@/theme';
@@ -19,6 +20,7 @@ export function NoteCard({
   editable: boolean;
   onSave: (text: string) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [text, setText] = useState(initialText);
   const [status, setStatus] = useState<Status>('idle');
   const saved = useRef(initialText);
@@ -57,8 +59,10 @@ export function NoteCard({
   return (
     <Card>
       <View style={styles.top}>
-        <CardLabel>GÜNÜN NOTU</CardLabel>
-        <Text style={[styles.status, status === 'error' && styles.statusError]}>{STATUS_TEXT[status]}</Text>
+        <CardLabel>{t('note.label')}</CardLabel>
+        <Text style={[styles.status, status === 'error' && styles.statusError]}>
+          {status === 'idle' ? '' : t(`note.${status}`)}
+        </Text>
       </View>
       <TextInput
         value={text}
@@ -66,7 +70,7 @@ export function NoteCard({
         editable={editable}
         multiline
         maxLength={MAX_LENGTH}
-        placeholder="Bugün nasıl geçti? Aklındakini yaz…"
+        placeholder={t('note.placeholder')}
         placeholderTextColor={colors.textFaint}
         selectionColor={colors.accent}
         style={styles.input}
@@ -74,18 +78,11 @@ export function NoteCard({
       />
       <View style={styles.bottom}>
         <View style={styles.lock} />
-        <Text style={styles.private}>Sadece sen görürsün</Text>
+        <Text style={styles.private}>{t('note.private')}</Text>
       </View>
     </Card>
   );
 }
-
-const STATUS_TEXT: Record<Status, string> = {
-  idle: '',
-  saving: 'Kaydediliyor…',
-  saved: 'Kaydedildi',
-  error: 'Kaydedilemedi, tekrar dene',
-};
 
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

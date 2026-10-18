@@ -1,18 +1,19 @@
+import i18n from '@/i18n';
+
 // API'deki kurallarla aynı (maxxing_app/Contracts/AuthContracts.cs). Asıl kontrol API'de yapılır;
 // bunlar kullanıcıya hatayı istek atmadan, hemen göstermek için.
 
 export function validateEmail(email: string) {
-  if (!email.trim()) return 'E-posta gerekli.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Geçerli bir e-posta gir.';
+  if (!email.trim()) return i18n.t('validation.emailRequired');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return i18n.t('validation.emailInvalid');
 }
 
 export function validateUserName(userName: string) {
-  if (!userName) return 'Kullanıcı adı gerekli.';
-  if (!/^[a-zA-Z0-9_.]{3,20}$/.test(userName))
-    return '3-20 karakter; sadece harf, rakam, _ ve . kullanabilirsin.';
+  if (!userName) return i18n.t('validation.userNameRequired');
+  if (!/^[a-zA-Z0-9_.]{3,20}$/.test(userName)) return i18n.t('validation.userNameInvalid');
 }
 
 export function validatePassword(password: string) {
-  if (!password) return 'Şifre gerekli.';
-  if (password.length < 8) return 'Şifre en az 8 karakter olmalı.';
+  if (!password) return i18n.t('validation.passwordRequired');
+  if (password.length < 8) return i18n.t('validation.passwordTooShort');
 }

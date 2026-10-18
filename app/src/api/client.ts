@@ -1,3 +1,5 @@
+import i18n, { getLanguage } from '@/i18n';
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5055';
 
 export class ApiError extends Error {
@@ -20,7 +22,8 @@ export async function apiFetch<T>(
   path: string,
   options: { method?: string; body?: unknown; token?: string | null } = {},
 ): Promise<T> {
-  const headers: Record<string, string> = {};
+  // API hata mesajlarını, alan listesini ve mailleri bu dilde verir.
+  const headers: Record<string, string> = { 'Accept-Language': getLanguage() };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
 
@@ -32,7 +35,7 @@ export async function apiFetch<T>(
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     });
   } catch {
-    throw new ApiError('Sunucuya ulaşılamadı. Bağlantını kontrol edip tekrar dene.', 0);
+    throw new ApiError(i18n.t('common.network'), 0);
   }
 
   if (response.status === 204) return undefined as T;
@@ -47,7 +50,7 @@ export async function apiFetch<T>(
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   throw new ApiError(
-    hasFieldErrors ? 'Lütfen işaretli alanları düzelt.' : (problem.title ?? 'Bir şeyler ters gitti.'),
+    hasFieldErrors ? i18n.t('common.fixFields') : (problem.title ?? i18n.t('common.somethingWrong')),
     response.status,
     fieldErrors,
   );

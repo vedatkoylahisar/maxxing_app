@@ -2,11 +2,14 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using maxxing_app.Auth;
 using maxxing_app.Data;
+using maxxing_app;
 using maxxing_app.Email;
+using maxxing_app.Localization;
 using maxxing_app.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -78,9 +81,15 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
         policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 
+// Dil: Accept-Language başlığına göre Türkçe ya da İngilizce (Localization/Languages.cs).
+// Metinler Resources/SharedResource*.resx içinde; doğrulama mesajları (ErrorMessage) da oradan çevrilir.
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)))
+    .AddDataAnnotationsLocalization(options =>
+        options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -98,6 +107,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRequestLocalization(options =>
+{
+    options.SetDefaultCulture(Languages.Default)
+        .AddSupportedCultures(Languages.Supported)
+        .AddSupportedUICultures(Languages.Supported);
+    // Sadece Accept-Language; "tr-TR" gibi bölgeli değerler "tr"ye düşer, desteklenmeyen diller varsayılana (İngilizce).
+    options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
+});
 
 app.UseCors();
 app.UseAuthentication();

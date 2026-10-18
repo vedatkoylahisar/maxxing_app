@@ -2,11 +2,13 @@ using maxxing_app.Auth;
 using maxxing_app.Contracts;
 using maxxing_app.Data;
 using maxxing_app.Email;
+using maxxing_app.Localization;
 using maxxing_app.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Npgsql;
 
 namespace maxxing_app.Controllers;
@@ -18,6 +20,7 @@ public class AuthController(
     IPasswordHasher<User> passwordHasher,
     TokenService tokenService,
     EmailCodeService emailCodes,
+    IStringLocalizer<SharedResource> localizer,
     ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("register")]
@@ -27,10 +30,10 @@ public class AuthController(
         var userName = request.UserName.ToLowerInvariant();
 
         if (await db.Users.AnyAsync(u => u.Email == email))
-            return Problem(statusCode: StatusCodes.Status409Conflict, title: "Bu e-posta zaten kayıtlı.");
+            return Problem(statusCode: StatusCodes.Status409Conflict, title: localizer["EmailTaken"]);
 
         if (await db.Users.AnyAsync(u => u.UserName == userName))
-            return Problem(statusCode: StatusCodes.Status409Conflict, title: "Bu kullanıcı adı alınmış.");
+            return Problem(statusCode: StatusCodes.Status409Conflict, title: localizer["UserNameTaken"]);
 
         var user = new User
         {
@@ -38,6 +41,7 @@ public class AuthController(
             Email = email,
             UserName = userName,
             TimeZone = request.TimeZone is { } zone && UserClock.IsValidTimeZone(zone) ? zone : UserClock.DefaultTimeZone,
+            Language = Languages.Current,
             CreatedAt = DateTime.UtcNow,
         };
         user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
@@ -50,7 +54,7 @@ public class AuthController(
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
             // Yukarıdaki kontrolle kayıt arasında aynı e-posta/kullanıcı adıyla başka biri kaydolduysa.
-            return Problem(statusCode: StatusCodes.Status409Conflict, title: "Bu e-posta veya kullanıcı adı zaten kayıtlı.");
+            return Problem(statusCode: StatusCodes.Status409Conflict, title: localizer["EmailOrUserNameTaken"]);
         }
 
         // Mail gitmese de hesap açılır; kullanıcı kod ekranından tekrar isteyebilir.
@@ -70,13 +74,14 @@ public class AuthController(
             : passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (result == PasswordVerificationResult.Failed)
-            return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "E-posta veya şifre hatalı.");
+            return Problem(statusCode: StatusCodes.Status401Unauthorized, title: localizer["InvalidCredentials"]);
 
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
-        {
             user!.PasswordHash = passwordHasher.HashPassword(user, request.Password);
-            await db.SaveChangesAsync();
-        }
+
+        // Mailler kullanıcının uygulamayı en son kullandığı dilde gitsin.
+        user!.Language = Languages.Current;
+        await db.SaveChangesAsync();
 
         // Onaylanmamış hesap: elinde geçerli bir kod yoksa (süresi dolmuş, hiç gitmemiş) yenisini gönder.
         if (user!.EmailVerifiedAt is null && !await emailCodes.HasActiveCodeAsync(user, EmailCodePurpose.EmailVerification))
@@ -114,13 +119,13 @@ public class AuthController(
         {
             case VerifyCodeStatus.Wrong:
                 return Problem(statusCode: StatusCodes.Status400BadRequest,
-                    title: $"Kod hatalı. {result.AttemptsLeft} deneme hakkın kaldı.");
+                    title: result.AttemptsLeft == 1 ? localizer["CodeWrongLastAttempt"] : localizer["CodeWrong", result.AttemptsLeft]);
             case VerifyCodeStatus.TooManyAttempts:
                 return Problem(statusCode: StatusCodes.Status400BadRequest,
-                    title: "Çok fazla hatalı deneme. Yeni kod iste.");
+                    title: localizer["TooManyAttempts"]);
             case VerifyCodeStatus.Expired:
                 return Problem(statusCode: StatusCodes.Status400BadRequest,
-                    title: "Kodun süresi doldu. Yeni kod iste.");
+                    title: localizer["CodeExpired"]);
         }
 
         user.EmailVerifiedAt = DateTime.UtcNow;
@@ -138,7 +143,7 @@ public class AuthController(
             return Unauthorized();
 
         if (user.EmailVerifiedAt is not null)
-            return Problem(statusCode: StatusCodes.Status409Conflict, title: "E-postan zaten onaylı.");
+            return Problem(statusCode: StatusCodes.Status409Conflict, title: localizer["EmailAlreadyVerified"]);
 
         TimeSpan? wait;
         try
@@ -149,7 +154,7 @@ public class AuthController(
         {
             logger.LogError(ex, "Doğrulama kodu gönderilemedi: {UserId}", user.Id);
             return Problem(statusCode: StatusCodes.Status503ServiceUnavailable,
-                title: "Kod gönderilemedi. Biraz sonra tekrar dene.");
+                title: localizer["CodeSendFailed"]);
         }
 
         if (wait is { } remaining)
@@ -157,7 +162,7 @@ public class AuthController(
             var seconds = (int)Math.Ceiling(remaining.TotalSeconds);
             Response.Headers.RetryAfter = seconds.ToString();
             return Problem(statusCode: StatusCodes.Status429TooManyRequests,
-                title: $"Yeni kod için {seconds} saniye bekle.");
+                title: localizer["ResendWait", seconds]);
         }
 
         return NoContent();

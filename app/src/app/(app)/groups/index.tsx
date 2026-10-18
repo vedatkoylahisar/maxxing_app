@@ -1,5 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -12,9 +13,11 @@ import type { PressState } from '@/components/pressableState';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { TextField } from '@/components/TextField';
+import { upperFirst } from '@/dates';
 import { colors, fonts } from '@/theme';
 
 export default function Groups() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const [groups, setGroups] = useState<Group[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -32,9 +35,9 @@ export default function Groups() {
       setGroups(await api(listGroups));
       setMessage(null);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Bir şeyler ters gitti.');
+      setMessage(error instanceof ApiError ? error.message : t('common.somethingWrong'));
     }
-  }, [api]);
+  }, [api, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +51,7 @@ export default function Groups() {
 
   async function create() {
     if (!name.trim()) {
-      setNameError('Grup adı gerekli.');
+      setNameError(t('groups.nameRequired'));
       return;
     }
     setNameError(undefined);
@@ -59,7 +62,7 @@ export default function Groups() {
       openGroup(group.id);
     } catch (error) {
       if (error instanceof ApiError) setNameError(error.fieldErrors.name ?? error.message);
-      else setNameError('Grup kurulamadı.');
+      else setNameError(t('groups.createFailed'));
     } finally {
       setCreating(false);
     }
@@ -67,7 +70,7 @@ export default function Groups() {
 
   async function join() {
     if (code.replace(/[^a-zA-Z0-9]/g, '').length < 6) {
-      setCodeError('Kod 6 karakter olmalı.');
+      setCodeError(t('groups.codeLength'));
       return;
     }
     setCodeError(undefined);
@@ -77,7 +80,7 @@ export default function Groups() {
       setCode('');
       openGroup(group.id);
     } catch (error) {
-      setCodeError(error instanceof ApiError ? error.message : 'Katılamadın, tekrar dene.');
+      setCodeError(error instanceof ApiError ? error.message : t('groups.joinFailed'));
     } finally {
       setJoining(false);
     }
@@ -85,8 +88,8 @@ export default function Groups() {
 
   return (
     <Screen>
-      <ScreenHeader title="Grupların" />
-      <Text style={styles.intro}>Arkadaşlarınla grup kur, kim bugün işini yaptı birlikte görün.</Text>
+      <ScreenHeader title={t('groups.title')} />
+      <Text style={styles.intro}>{t('groups.intro')}</Text>
 
       {message ? (
         <View style={styles.message}>
@@ -108,14 +111,15 @@ export default function Groups() {
               style={(state) => [styles.item, ((state as PressState).hovered || state.pressed) && styles.itemActive]}
             >
               <View style={styles.initial}>
-                <Text style={styles.initialText}>{group.name.charAt(0).toLocaleUpperCase('tr-TR')}</Text>
+                <Text style={styles.initialText}>{upperFirst(group.name)}</Text>
               </View>
               <View style={styles.itemBody}>
                 <Text style={styles.itemName} numberOfLines={1}>
                   {group.name}
                 </Text>
                 <Text style={styles.itemSub}>
-                  {group.memberCount} üye{group.isOwner ? ' · kurucusun' : ''}
+                  {t('groups.members', { count: group.memberCount })}
+                  {group.isOwner ? t('groups.youOwn') : ''}
                 </Text>
               </View>
               <Text style={styles.chevron}>›</Text>
@@ -123,32 +127,32 @@ export default function Groups() {
           ))}
         </View>
       ) : (
-        <Text style={styles.none}>Henüz bir grupta değilsin. Bir grup kur ya da arkadaşının kodunu gir.</Text>
+        <Text style={styles.none}>{t('groups.none')}</Text>
       )}
 
       <Card style={styles.card}>
-        <CardLabel>GRUP KUR</CardLabel>
+        <CardLabel>{t('groups.createLabel')}</CardLabel>
         <TextField
-          label="Grup adı"
+          label={t('groups.nameLabel')}
           value={name}
           onChangeText={setName}
           error={nameError}
-          placeholder="Spor kankaları, YKS ekibi…"
+          placeholder={t('groups.namePlaceholder')}
           maxLength={40}
           returnKeyType="done"
           onSubmitEditing={create}
         />
-        <Button title="Grubu kur" onPress={create} loading={creating} />
+        <Button title={t('groups.create')} onPress={create} loading={creating} />
       </Card>
 
       <Card style={styles.card}>
-        <CardLabel>KODLA KATIL</CardLabel>
+        <CardLabel>{t('groups.joinLabel')}</CardLabel>
         <TextField
-          label="Davet kodu"
+          label={t('groups.codeLabel')}
           value={code}
           onChangeText={(text) => setCode(text.toUpperCase())}
           error={codeError}
-          hint="Arkadaşından aldığın 6 karakterlik kod."
+          hint={t('groups.codeHint')}
           placeholder="K7M2QX"
           autoCapitalize="characters"
           autoCorrect={false}
@@ -156,7 +160,7 @@ export default function Groups() {
           returnKeyType="go"
           onSubmitEditing={join}
         />
-        <Button title="Gruba katıl" variant="ghost" onPress={join} loading={joining} />
+        <Button title={t('groups.join')} variant="ghost" onPress={join} loading={joining} />
       </Card>
     </Screen>
   );

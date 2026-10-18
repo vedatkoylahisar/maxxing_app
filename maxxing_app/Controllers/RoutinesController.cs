@@ -5,13 +5,14 @@ using maxxing_app.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace maxxing_app.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("routines")]
-public class RoutinesController(AppDbContext db) : ControllerBase
+public class RoutinesController(AppDbContext db, IStringLocalizer<SharedResource> localizer) : ControllerBase
 {
     private const int MaxActiveRoutines = 20;
 
@@ -36,15 +37,15 @@ public class RoutinesController(AppDbContext db) : ControllerBase
 
         var name = request.Name.Trim();
         if (name.Length == 0)
-            return FieldError(nameof(request.Name), "Rutin adı gerekli.");
+            return FieldError(nameof(request.Name), localizer["RoutineNameRequired"]);
 
         var type = request.Type!.Value;
         if (type == RoutineType.Count && request.Target is null)
-            return FieldError(nameof(request.Target), "Sayılı rutin için bir hedef gir.");
+            return FieldError(nameof(request.Target), localizer["CountTargetRequired"]);
 
         var active = await db.Routines.Where(r => r.UserId == userId && r.ArchivedOn == null).ToListAsync();
         if (active.Count >= MaxActiveRoutines)
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: $"En fazla {MaxActiveRoutines} rutinin olabilir.");
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["RoutineLimit", MaxActiveRoutines]);
 
         var routine = new Routine
         {
@@ -74,12 +75,12 @@ public class RoutinesController(AppDbContext db) : ControllerBase
 
         var name = request.Name.Trim();
         if (name.Length == 0)
-            return FieldError(nameof(request.Name), "Rutin adı gerekli.");
+            return FieldError(nameof(request.Name), localizer["RoutineNameRequired"]);
 
         if (routine.Type == RoutineType.Count)
         {
             if (request.Target is null)
-                return FieldError(nameof(request.Target), "Sayılı rutin için bir hedef gir.");
+                return FieldError(nameof(request.Target), localizer["CountTargetRequired"]);
             routine.Target = request.Target;
             routine.Unit = NullIfEmpty(request.Unit);
         }

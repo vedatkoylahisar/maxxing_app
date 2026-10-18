@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { resendVerificationCode, verifyEmail } from '@/api/auth';
@@ -18,6 +19,7 @@ const CODE_LENGTH = 6;
 
 // Kayıttan sonra: e-postaya giden 6 haneli kod girilene kadar uygulamanın geri kalanı açılmaz.
 export default function VerifyEmail() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const { session, isNewUser, signIn, signOut } = useSession();
 
@@ -38,7 +40,7 @@ export default function VerifyEmail() {
   async function submit(value = code) {
     if (loading) return;
     if (value.length !== CODE_LENGTH) {
-      setError(`Kod ${CODE_LENGTH} haneli olmalı.`);
+      setError(t('verifyEmail.codeLength', { length: CODE_LENGTH }));
       return;
     }
 
@@ -49,7 +51,7 @@ export default function VerifyEmail() {
       // Onaydan sonra "Ne için buradasın?" ekranı açılır.
       await signIn(await api((t) => verifyEmail(t, value)), { isNew: true });
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Bir şeyler ters gitti.');
+      setError(e instanceof ApiError ? e.message : t('common.somethingWrong'));
       setCode('');
       setLoading(false);
     }
@@ -68,11 +70,11 @@ export default function VerifyEmail() {
     setInfo(null);
     try {
       await api(resendVerificationCode);
-      setInfo('Yeni kod gönderildi. Önceki kod artık geçersiz.');
+      setInfo(t('verifyEmail.resent'));
       setCode('');
       setWait(RESEND_COOLDOWN_SECONDS);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Kod gönderilemedi.');
+      setError(e instanceof ApiError ? e.message : t('verifyEmail.sendFailed'));
     } finally {
       setResending(false);
     }
@@ -83,17 +85,20 @@ export default function VerifyEmail() {
       <Brand />
 
       <Text style={styles.title}>
-        E-postanı{'\n'}
-        <Text style={styles.accent}>onayla.</Text>
+        {t('verifyEmail.title')}
+        <Text style={styles.accent}>{t('verifyEmail.titleAccent')}</Text>
       </Text>
       <Text style={styles.subtitle}>
-        <Text style={styles.email}>{session?.user.email}</Text> adresine {CODE_LENGTH} haneli bir kod gönderdik. Kod 15
-        dakika geçerli.
+        <Trans
+          i18nKey="verifyEmail.subtitle"
+          values={{ email: session?.user.email, length: CODE_LENGTH }}
+          components={{ email: <Text style={styles.email} /> }}
+        />
       </Text>
 
       <View style={styles.form}>
         <TextField
-          label="Doğrulama kodu"
+          label={t('verifyEmail.codeLabel')}
           value={code}
           onChangeText={changeCode}
           placeholder="000000"
@@ -104,29 +109,29 @@ export default function VerifyEmail() {
           autoFocus
           returnKeyType="go"
           onSubmitEditing={() => submit()}
-          hint={__DEV__ ? 'Geliştirme: mailler http://localhost:8025 adresinde.' : undefined}
+          hint={__DEV__ ? t('verifyEmail.devHint') : undefined}
         />
         <FormMessage message={error} />
         {info ? <Text style={styles.info}>{info}</Text> : null}
-        <Button title="Onayla" onPress={() => submit()} loading={loading} />
+        <Button title={t('verifyEmail.submit')} onPress={() => submit()} loading={loading} />
 
         <View style={styles.resendRow}>
-          <Text style={styles.muted}>Kod gelmedi mi? </Text>
+          <Text style={styles.muted}>{t('verifyEmail.noCode')}</Text>
           {wait > 0 ? (
-            <Text style={styles.faint}>Tekrar gönder ({formatWait(wait)})</Text>
+            <Text style={styles.faint}>{t('verifyEmail.resendIn', { time: formatWait(wait) })}</Text>
           ) : (
             <Pressable onPress={resend} disabled={resending} accessibilityRole="button" hitSlop={8}>
-              <Text style={styles.link}>{resending ? 'Gönderiliyor…' : 'Tekrar gönder'}</Text>
+              <Text style={styles.link}>{resending ? t('verifyEmail.sending') : t('verifyEmail.resend')}</Text>
             </Pressable>
           )}
         </View>
-        <Text style={styles.spamHint}>Gelen kutunda yoksa spam klasörüne de bak.</Text>
+        <Text style={styles.spamHint}>{t('verifyEmail.spamHint')}</Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.muted}>Yanlış hesap mı? </Text>
+        <Text style={styles.muted}>{t('verifyEmail.wrongAccount')}</Text>
         <Pressable onPress={signOut} accessibilityRole="button" hitSlop={8}>
-          <Text style={styles.link}>Çıkış yap</Text>
+          <Text style={styles.link}>{t('common.signOut')}</Text>
         </Pressable>
       </View>
     </Screen>

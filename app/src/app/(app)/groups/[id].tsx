@@ -1,6 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -13,10 +14,12 @@ import type { PressState } from '@/components/pressableState';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { confirm } from '@/confirm';
+import { upperFirst } from '@/dates';
 import { colors, fonts } from '@/theme';
 
 export default function GroupPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -29,9 +32,9 @@ export default function GroupPage() {
       setMessage(null);
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) router.replace('/groups');
-      else setMessage(error instanceof ApiError ? error.message : 'Bir şeyler ters gitti.');
+      else setMessage(error instanceof ApiError ? error.message : t('common.somethingWrong'));
     }
-  }, [api, id]);
+  }, [api, id, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,14 +50,14 @@ export default function GroupPage() {
   }
 
   async function resetCode() {
-    const ok = await confirm('Kodu yenile', 'Yeni bir davet kodu üretilsin mi? Eski kod artık çalışmaz.', 'Yenile');
+    const ok = await confirm(t('group.resetTitle'), t('group.resetMessage'), t('group.resetConfirm'));
     if (!ok) return;
     setBusy(true);
     try {
       const updated = await api((t) => resetInviteCode(t, id));
       setGroup((current) => (current ? { ...current, inviteCode: updated.inviteCode } : current));
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Kod yenilenemedi.');
+      setMessage(error instanceof ApiError ? error.message : t('group.resetFailed'));
     } finally {
       setBusy(false);
     }
@@ -64,15 +67,15 @@ export default function GroupPage() {
     if (!group) return;
     const last = group.members.length === 1;
     const text = last
-      ? `"${group.name}" grubundaki son kişisin. Ayrılırsan grup silinir.`
-      : `"${group.name}" grubundan ayrılmak istiyor musun?`;
-    if (!(await confirm('Gruptan ayrıl', text, 'Ayrıl'))) return;
+      ? t('group.leaveLast', { name: group.name })
+      : t('group.leaveAsk', { name: group.name });
+    if (!(await confirm(t('group.leaveTitle'), text, t('group.leaveConfirm')))) return;
     setBusy(true);
     try {
       await api((t) => leaveGroup(t, id));
       router.replace('/groups');
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Ayrılamadın, tekrar dene.');
+      setMessage(error instanceof ApiError ? error.message : t('group.leaveFailed'));
       setBusy(false);
     }
   }
@@ -80,7 +83,7 @@ export default function GroupPage() {
   if (!group) {
     return (
       <Screen>
-        <ScreenHeader title="Grup" />
+        <ScreenHeader title={t('group.title')} />
         <View style={styles.loading}>
           {message ? <FormMessage message={message} /> : <ActivityIndicator color={colors.accent} />}
         </View>
@@ -101,7 +104,7 @@ export default function GroupPage() {
       ) : null}
 
       <Card style={styles.inviteCard}>
-        <CardLabel>DAVET KODU</CardLabel>
+        <CardLabel>{t('group.inviteLabel')}</CardLabel>
         <View style={styles.codeRow}>
           <Text style={styles.code} selectable>
             {group.inviteCode}
@@ -111,21 +114,21 @@ export default function GroupPage() {
             accessibilityRole="button"
             style={(state) => [styles.copy, ((state as PressState).hovered || state.pressed) && styles.copyActive]}
           >
-            <Text style={styles.copyText}>{copied ? 'Kopyalandı' : 'Kopyala'}</Text>
+            <Text style={styles.copyText}>{copied ? t('group.copied') : t('group.copy')}</Text>
           </Pressable>
         </View>
-        <Text style={styles.hint}>Arkadaşın Gruplar → Kodla katıl kısmına bu kodu yazsın.</Text>
+        <Text style={styles.hint}>{t('group.inviteHint')}</Text>
         {group.isOwner ? (
           <Pressable onPress={resetCode} disabled={busy} accessibilityRole="button" hitSlop={6}>
-            <Text style={styles.reset}>Kodu yenile</Text>
+            <Text style={styles.reset}>{t('group.resetTitle')}</Text>
           </Pressable>
         ) : null}
       </Card>
 
       <View style={styles.sectionTop}>
-        <Text style={styles.sectionTitle}>Bugün</Text>
+        <Text style={styles.sectionTitle}>{t('group.today')}</Text>
         <Text style={styles.sectionCount}>
-          {doneCount}/{group.members.length} kişi tamamladı
+          {t('group.doneCount', { done: doneCount, total: group.members.length })}
         </Text>
       </View>
 
@@ -135,7 +138,7 @@ export default function GroupPage() {
         ))}
       </View>
 
-      <Text style={styles.privacy}>Grupta sadece günlük özetin görünür. Rutinlerinin adları ve notların görünmez.</Text>
+      <Text style={styles.privacy}>{t('group.privacy')}</Text>
 
       <Pressable
         onPress={leave}
@@ -143,19 +146,20 @@ export default function GroupPage() {
         accessibilityRole="button"
         style={(state) => [styles.leave, ((state as PressState).hovered || state.pressed) && styles.leaveActive]}
       >
-        <Text style={styles.leaveText}>Gruptan ayrıl</Text>
+        <Text style={styles.leaveText}>{t('group.leaveTitle')}</Text>
       </Pressable>
     </Screen>
   );
 }
 
 function MemberRow({ member, rank }: { member: GroupMember; rank: number }) {
+  const { t } = useTranslation();
   const progress = member.totalCount > 0 ? member.completedCount / member.totalCount : 0;
   const status = member.todayCompleted
-    ? 'Bugün tamam'
+    ? t('group.memberDone')
     : member.totalCount === 0
-      ? 'Henüz rutini yok'
-      : `${member.completedCount}/${member.totalCount} tamamladı`;
+      ? t('group.memberNoRoutines')
+      : t('group.memberProgress', { done: member.completedCount, total: member.totalCount });
 
   return (
     <Pressable
@@ -175,7 +179,7 @@ function MemberRow({ member, rank }: { member: GroupMember; rank: number }) {
         {member.todayCompleted ? (
           <Checkmark size={16} color={colors.accentInk} weight={3} />
         ) : (
-          <Text style={styles.avatarText}>{member.userName.charAt(0).toLocaleUpperCase('tr-TR')}</Text>
+          <Text style={styles.avatarText}>{upperFirst(member.userName)}</Text>
         )}
       </View>
       <View style={styles.memberBody}>
@@ -183,8 +187,8 @@ function MemberRow({ member, rank }: { member: GroupMember; rank: number }) {
           <Text style={styles.memberName} numberOfLines={1}>
             @{member.userName}
           </Text>
-          {member.isMe ? <Badge text="Sen" /> : null}
-          {member.isOwner ? <Badge text="Kurucu" /> : null}
+          {member.isMe ? <Badge text={t('group.you')} /> : null}
+          {member.isOwner ? <Badge text={t('group.owner')} /> : null}
         </View>
         <Text style={[styles.memberStatus, member.todayCompleted && styles.memberStatusDone]}>{status}</Text>
         {!member.todayCompleted && member.totalCount > 0 ? (
@@ -195,7 +199,7 @@ function MemberRow({ member, rank }: { member: GroupMember; rank: number }) {
       </View>
       <View style={styles.streak}>
         <Text style={[styles.streakNumber, member.streak === 0 && styles.streakZero]}>{member.streak}</Text>
-        <Text style={styles.streakLabel}>gün</Text>
+        <Text style={styles.streakLabel}>{t('common.dayUnit', { count: member.streak })}</Text>
       </View>
     </Pressable>
   );
