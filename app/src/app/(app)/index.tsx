@@ -1,10 +1,11 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
 import { getDay, getHistory, getToday, setEntry, setNote, type Day, type DaySummary } from '@/api/days';
-import { createRoutine, ROUTINE_SUGGESTIONS, type RoutineInput } from '@/api/routines';
+import { createRoutine, routineSuggestions, type RoutineInput } from '@/api/routines';
 import { useSession } from '@/auth/session';
 import { useAuthedApi } from '@/auth/useAuthedApi';
 import { Brand } from '@/components/Brand';
@@ -27,6 +28,7 @@ const HISTORY_DAYS = 30;
 type Which = 'today' | 'yesterday';
 
 export default function Today() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const { session, isNewUser, clearNewUser } = useSession();
   const { width } = useWindowDimensions();
@@ -71,10 +73,10 @@ export default function Today() {
         setHistory(summaries);
         setMessage(null);
       } catch (error) {
-        setMessage(error instanceof ApiError ? error.message : 'Bir şeyler ters gitti.');
+        setMessage(error instanceof ApiError ? error.message : t('common.somethingWrong'));
       }
     },
-    [api],
+    [api, t],
   );
 
   // Rutinler sayfasından dönünce de güncel olsun.
@@ -113,7 +115,7 @@ export default function Today() {
           const next = await api((t) => setEntry(t, date, routineId, value));
           if (writeId === latestWrite.current) applyDay(next);
         } catch (error) {
-          setMessage(error instanceof ApiError ? error.message : 'Kaydedilemedi.');
+          setMessage(error instanceof ApiError ? error.message : t('common.couldNotSave'));
           load(which);
         }
       });
@@ -133,7 +135,7 @@ export default function Today() {
       await api((t) => createRoutine(t, input));
       await load(which);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Rutin eklenemedi.');
+      setMessage(error instanceof ApiError ? error.message : t('today.addFailed'));
     } finally {
       setAdding(null);
     }
@@ -146,8 +148,8 @@ export default function Today() {
         <Brand compact={width < 400} />
         <View style={styles.headerButtons}>
           {[
-            { label: 'Gruplar', href: '/groups' as const },
-            { label: 'Rutinler', href: '/routines' as const },
+            { label: t('today.groups'), href: '/groups' as const },
+            { label: t('today.routines'), href: '/routines' as const },
           ].map((item) => (
             <Pressable
               key={item.href}
@@ -164,7 +166,7 @@ export default function Today() {
           <Pressable
             onPress={() => router.push('/profile')}
             accessibilityRole="button"
-            accessibilityLabel="Profil"
+            accessibilityLabel={t('today.profile')}
             style={(state) => [styles.avatar, ((state as PressState).hovered || state.pressed) && styles.avatarActive]}
           >
             <Text style={styles.avatarText}>{initialOf(session?.user.userName ?? '?')}</Text>
@@ -175,8 +177,8 @@ export default function Today() {
       <View style={styles.daySwitch}>
         <Segmented
           options={[
-            { value: 'yesterday', label: 'Dün' },
-            { value: 'today', label: 'Bugün' },
+            { value: 'yesterday', label: t('today.yesterday') },
+            { value: 'today', label: t('today.today') },
           ]}
           value={which}
           onChange={switchDay}
@@ -201,22 +203,20 @@ export default function Today() {
 
           {day.routines.length === 0 ? (
             <Card style={styles.empty}>
-              <CardLabel>{day.isToday ? 'BAŞLAYALIM' : 'DÜN'}</CardLabel>
-              <Text style={styles.emptyTitle}>{day.isToday ? 'İlk rutinini ekle' : 'Dün aktif rutinin yoktu'}</Text>
+              <CardLabel>{day.isToday ? t('today.emptyLabelToday') : t('today.emptyLabelYesterday')}</CardLabel>
+              <Text style={styles.emptyTitle}>{day.isToday ? t('today.emptyTitleToday') : t('today.emptyTitleYesterday')}</Text>
               {day.isToday ? (
                 <>
-                  <Text style={styles.emptyText}>
-                    Bir tanesine dokun, hemen listene eklensin. Sonra her gün tikle, serin büyüsün.
-                  </Text>
-                  <SuggestionChips suggestions={ROUTINE_SUGGESTIONS} adding={adding} onPick={addSuggestion} />
-                  <Button title="Kendi rutinini oluştur" variant="ghost" onPress={() => router.push('/routines/new')} />
+                  <Text style={styles.emptyText}>{t('today.emptyText')}</Text>
+                  <SuggestionChips suggestions={routineSuggestions()} adding={adding} onPick={addSuggestion} />
+                  <Button title={t('today.createOwn')} variant="ghost" onPress={() => router.push('/routines/new')} />
                 </>
               ) : null}
             </Card>
           ) : (
             <>
               <View style={styles.sectionTop}>
-                <Text style={styles.sectionTitle}>{day.isToday ? 'Bugünün rutinleri' : 'Dünün rutinleri'}</Text>
+                <Text style={styles.sectionTitle}>{day.isToday ? t('today.todayRoutines') : t('today.yesterdayRoutines')}</Text>
                 <Text style={styles.sectionCount}>
                   {day.completedCount}/{day.totalCount}
                 </Text>
@@ -249,15 +249,16 @@ export default function Today() {
 }
 
 function StreakCard({ day, history, today }: { day: Day; history: DaySummary[]; today: string }) {
+  const { t } = useTranslation();
   const { current, todayCompleted } = day.streak;
   const left = day.isToday ? day.totalCount - day.completedCount : 0;
 
   let status: string;
-  if (todayCompleted) status = 'Bugün tamam. Seri devam ediyor!';
-  else if (!day.isToday) status = 'Dünü buradan tamamlayabilirsin.';
-  else if (day.totalCount === 0) status = 'İlk rutinini tamamladığın gün serin başlayacak.';
-  else if (current > 0) status = `Seriyi korumak için ${left} rutin kaldı.`;
-  else status = `Bugün ${left} rutini tamamla, serin başlasın.`;
+  if (todayCompleted) status = t('today.statusDone');
+  else if (!day.isToday) status = t('today.statusYesterday');
+  else if (day.totalCount === 0) status = t('today.statusNoRoutines');
+  else if (current > 0) status = t('today.statusKeep', { count: left });
+  else status = t('today.statusStart', { count: left });
 
   const levels = history.map((d) => {
     if (d.totalCount === 0 || d.completedCount === 0) return 0;
@@ -269,21 +270,21 @@ function StreakCard({ day, history, today }: { day: Day; history: DaySummary[]; 
   return (
     <Card style={styles.streakCard}>
       <View style={styles.streakTop}>
-        <CardLabel>GÜNLÜK SERİ</CardLabel>
+        <CardLabel>{t('today.streakLabel')}</CardLabel>
         {todayCompleted ? (
           <View style={styles.doneChip}>
-            <Text style={styles.doneChipText}>Bugün tamam</Text>
+            <Text style={styles.doneChipText}>{t('today.doneChip')}</Text>
           </View>
         ) : null}
       </View>
       <View style={styles.streakRow}>
         <Text style={styles.streakNumber}>{current}</Text>
-        <Text style={styles.streakUnit}>gün</Text>
+        <Text style={styles.streakUnit}>{t('common.dayUnit', { count: current })}</Text>
       </View>
       <Text style={styles.streakStatus}>{status}</Text>
 
       <View style={styles.gridTop}>
-        <CardLabel>SON 30 GÜN</CardLabel>
+        <CardLabel>{t('today.last30')}</CardLabel>
       </View>
       <HabitGrid levels={levels} pulseIndex={todayCompleted ? undefined : todayIndex} />
     </Card>

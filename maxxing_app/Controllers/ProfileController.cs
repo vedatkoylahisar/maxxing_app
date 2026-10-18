@@ -8,13 +8,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace maxxing_app.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("profile")]
-public class ProfileController(AppDbContext db, IPasswordHasher<User> passwordHasher) : ControllerBase
+public class ProfileController(AppDbContext db, IPasswordHasher<User> passwordHasher, IStringLocalizer<SharedResource> localizer) : ControllerBase
 {
     private const int MaxAreaLength = 30;
 
@@ -22,7 +23,9 @@ public class ProfileController(AppDbContext db, IPasswordHasher<User> passwordHa
     [AllowAnonymous]
     [HttpGet("areas")]
     public List<AreaCatalogResponse> Areas() =>
-        AreaCatalog.All.Select(a => new AreaCatalogResponse(a.Key, a.Label, a.Suggestions)).ToList();
+        AreaCatalog.All
+            .Select(a => new AreaCatalogResponse(a.Key, a.Label.Current, a.Suggestions.Select(s => s.Current).ToList()))
+            .ToList();
 
     [HttpGet("me")]
     public async Task<ActionResult<ProfileResponse>> Me()
@@ -45,7 +48,7 @@ public class ProfileController(AppDbContext db, IPasswordHasher<User> passwordHa
             .ToList();
         if (areas.Any(a => a.Length > MaxAreaLength))
         {
-            ModelState.AddModelError(nameof(request.Areas), $"Bir alan en fazla {MaxAreaLength} karakter olabilir.");
+            ModelState.AddModelError(nameof(request.Areas), localizer["AreaTooLong", MaxAreaLength]);
             return ValidationProblem(ModelState);
         }
 
@@ -82,7 +85,7 @@ public class ProfileController(AppDbContext db, IPasswordHasher<User> passwordHa
 
         if (passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword) == PasswordVerificationResult.Failed)
         {
-            ModelState.AddModelError(nameof(request.CurrentPassword), "Mevcut şifre yanlış.");
+            ModelState.AddModelError(nameof(request.CurrentPassword), localizer["CurrentPasswordWrong"]);
             return ValidationProblem(ModelState);
         }
 

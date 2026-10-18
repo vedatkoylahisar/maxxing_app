@@ -1,71 +1,89 @@
+using maxxing_app.Localization;
 using maxxing_app.Models;
 
 namespace maxxing_app.Profiles;
 
 public record RoutineSuggestion(string Name, RoutineType Type, int? Target = null, string? Unit = null);
 
-public record Area(string Key, string Label, IReadOnlyList<RoutineSuggestion> Suggestions);
+// Katalogdaki metinler her dilde ayrı. Yeni bir dil eklenirse buraya da eklenir.
+public record LocalizedText(string Tr, string En)
+{
+    public string Current => Languages.Current == Languages.Turkish ? Tr : En;
+}
 
-// "Ne için buradasın?" listesi ve her alana göre önerilen rutinler.
+public record SuggestionTemplate(LocalizedText Name, RoutineType Type, int? Target = null, LocalizedText? Unit = null)
+{
+    public RoutineSuggestion Current => new(Name.Current, Type, Target, Unit?.Current);
+}
+
+public record Area(string Key, LocalizedText Label, IReadOnlyList<SuggestionTemplate> Suggestions);
+
+// "Ne için buradasın?" listesi ve her alana göre önerilen rutinler; metinler isteğin dilinde döner.
 // Kullanıcı listede olmayan bir alanı kendisi de yazabilir; onun önerisi olmaz.
+// Anahtarlar (örn. "yks") veritabanında saklandığı için değiştirilmez.
 public static class AreaCatalog
 {
+    private static readonly LocalizedText Questions = new("soru", "questions");
+    private static readonly LocalizedText Minutes = new("dakika", "minutes");
+    private static readonly LocalizedText Hours = new("saat", "hours");
+
     public static readonly IReadOnlyList<Area> All =
     [
-        new("yks", "YKS / sınav",
+        // Türkçede YKS, diğer dillerde genel sınav hazırlığı.
+        new("yks", new("YKS / sınav", "Exams (SAT, IELTS…)"),
         [
-            new("Soru çöz", RoutineType.Count, 100, "soru"),
-            new("Konu tekrarı", RoutineType.Check),
-            new("Paragraf", RoutineType.Count, 20, "soru"),
+            new(new("Soru çöz", "Practice questions"), RoutineType.Count, 100, Questions),
+            new(new("Konu tekrarı", "Topic review"), RoutineType.Check),
+            new(new("Paragraf", "Reading comprehension"), RoutineType.Count, 20, Questions),
         ]),
-        new("body", "Vücut (body maxxing)",
+        new("body", new("Vücut (body maxxing)", "Body (body maxxing)"),
         [
-            new("Spor", RoutineType.Check),
-            new("Protein", RoutineType.Count, 120, "gram"),
-            new("Su", RoutineType.Count, 8, "bardak"),
-            new("Uyku", RoutineType.Count, 8, "saat"),
+            new(new("Spor", "Workout"), RoutineType.Check),
+            new(new("Protein", "Protein"), RoutineType.Count, 120, new("gram", "grams")),
+            new(new("Su", "Water"), RoutineType.Count, 8, new("bardak", "glasses")),
+            new(new("Uyku", "Sleep"), RoutineType.Count, 8, Hours),
         ]),
-        new("face", "Yüz (face maxxing)",
+        new("face", new("Yüz (face maxxing)", "Face (face maxxing)"),
         [
-            new("Sabah cilt bakımı", RoutineType.Check),
-            new("Akşam cilt bakımı", RoutineType.Check),
-            new("Güneş kremi", RoutineType.Check),
-            new("Mewing", RoutineType.Check),
+            new(new("Sabah cilt bakımı", "Morning skincare"), RoutineType.Check),
+            new(new("Akşam cilt bakımı", "Evening skincare"), RoutineType.Check),
+            new(new("Güneş kremi", "Sunscreen"), RoutineType.Check),
+            new(new("Mewing", "Mewing"), RoutineType.Check),
         ]),
-        new("software", "Yazılım",
+        new("software", new("Yazılım", "Software"),
         [
-            new("Kod yaz", RoutineType.Count, 60, "dakika"),
-            new("Algoritma sorusu", RoutineType.Count, 1, "soru"),
-            new("Yeni bir şey öğren", RoutineType.Check),
+            new(new("Kod yaz", "Code"), RoutineType.Count, 60, Minutes),
+            new(new("Algoritma sorusu", "Algorithm problem"), RoutineType.Count, 1, new("soru", "problem")),
+            new(new("Yeni bir şey öğren", "Learn something new"), RoutineType.Check),
         ]),
-        new("medicine", "Tıp",
+        new("medicine", new("Tıp", "Medicine"),
         [
-            new("Konu çalış", RoutineType.Count, 2, "saat"),
-            new("Soru / vaka", RoutineType.Count, 30, "soru"),
-            new("Makale oku", RoutineType.Check),
+            new(new("Konu çalış", "Study topics"), RoutineType.Count, 2, Hours),
+            new(new("Soru / vaka", "Questions / cases"), RoutineType.Count, 30, Questions),
+            new(new("Makale oku", "Read an article"), RoutineType.Check),
         ]),
-        new("work", "İş / kariyer",
+        new("work", new("İş / kariyer", "Work / career"),
         [
-            new("Derin çalışma", RoutineType.Count, 90, "dakika"),
-            new("Günü planla", RoutineType.Check),
-            new("Gelen kutusunu sıfırla", RoutineType.Check),
+            new(new("Derin çalışma", "Deep work"), RoutineType.Count, 90, Minutes),
+            new(new("Günü planla", "Plan the day"), RoutineType.Check),
+            new(new("Gelen kutusunu sıfırla", "Inbox zero"), RoutineType.Check),
         ]),
-        new("selfdev", "Kişisel gelişim",
+        new("selfdev", new("Kişisel gelişim", "Self-improvement"),
         [
-            new("Kitap", RoutineType.Count, 20, "sayfa"),
-            new("Meditasyon", RoutineType.Count, 10, "dakika"),
-            new("Günlük yaz", RoutineType.Check),
+            new(new("Kitap", "Reading"), RoutineType.Count, 20, new("sayfa", "pages")),
+            new(new("Meditasyon", "Meditation"), RoutineType.Count, 10, Minutes),
+            new(new("Günlük yaz", "Journal"), RoutineType.Check),
         ]),
-        new("sport", "Spor",
+        new("sport", new("Spor", "Sports"),
         [
-            new("Antrenman", RoutineType.Check),
-            new("Esneme", RoutineType.Count, 15, "dakika"),
-            new("Koşu", RoutineType.Count, 5, "km"),
+            new(new("Antrenman", "Training"), RoutineType.Check),
+            new(new("Esneme", "Stretching"), RoutineType.Count, 15, Minutes),
+            new(new("Koşu", "Run"), RoutineType.Count, 5, new("km", "km")),
         ]),
-        new("language", "Dil öğrenme",
+        new("language", new("Dil öğrenme", "Language learning"),
         [
-            new("Kelime", RoutineType.Count, 20, "kelime"),
-            new("Dinleme", RoutineType.Count, 30, "dakika"),
+            new(new("Kelime", "Vocabulary"), RoutineType.Count, 20, new("kelime", "words")),
+            new(new("Dinleme", "Listening"), RoutineType.Count, 30, Minutes),
         ]),
     ];
 
@@ -73,6 +91,6 @@ public static class AreaCatalog
 
     public static Area? Find(string key) => ByKey.GetValueOrDefault(key);
 
-    // Kayıtlı değer listedeki bir anahtarsa onun etiketi, değilse kullanıcının yazdığı metin.
-    public static string LabelOf(string value) => Find(value)?.Label ?? value;
+    // Kayıtlı değer listedeki bir anahtarsa onun (isteğin dilindeki) etiketi, değilse kullanıcının yazdığı metin.
+    public static string LabelOf(string value) => Find(value)?.Label.Current ?? value;
 }

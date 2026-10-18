@@ -4,10 +4,11 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { SessionProvider, useSession } from '@/auth/session';
+import { loadSavedLanguage } from '@/i18n';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +38,12 @@ export default function RootLayout() {
 
 function RootNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { isLoading, session } = useSession();
-  const ready = fontsLoaded && !isLoading;
+  // Elle seçilmiş bir dil varsa ekran o dilde açılsın, önce cihaz dilinde görünüp değişmesin.
+  const [languageLoaded, setLanguageLoaded] = useState(false);
+  useEffect(() => {
+    loadSavedLanguage().finally(() => setLanguageLoaded(true));
+  }, []);
+  const ready = fontsLoaded && !isLoading && languageLoaded;
 
   useEffect(() => {
     if (ready) SplashScreen.hide();

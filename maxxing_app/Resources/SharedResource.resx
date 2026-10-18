@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Email is required.</value>
+  </data>
+  <data name="EmailInvalid" xml:space="preserve">
+    <value>Enter a valid email.</value>
+  </data>
+  <data name="EmailTooLong" xml:space="preserve">
+    <value>Email can be at most 256 characters.</value>
+  </data>
+  <data name="UserNameRequired" xml:space="preserve">
+    <value>Username is required.</value>
+  </data>
+  <data name="UserNameInvalid" xml:space="preserve">
+    <value>Username must be 3–20 characters and can only contain letters, numbers, _ and .</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Password must be at least 8 characters.</value>
+  </data>
+  <data name="PasswordTooLong" xml:space="preserve">
+    <value>Password can be at most 128 characters.</value>
+  </data>
+  <data name="CodeRequired" xml:space="preserve">
+    <value>Code is required.</value>
+  </data>
+  <data name="CodeInvalid" xml:space="preserve">
+    <value>The code must be 6 digits.</value>
+  </data>
+  <data name="EntryValueRange" xml:space="preserve">
+    <value>Value must be between 0 and 1,000,000.</value>
+  </data>
+  <data name="NoteTooLong" xml:space="preserve">
+    <value>Note can be at most 2000 characters.</value>
+  </data>
+  <data name="GroupNameRequired" xml:space="preserve">
+    <value>Group name is required.</value>
+  </data>
+  <data name="GroupNameTooLong" xml:space="preserve">
+    <value>Group name can be at most 40 characters.</value>
+  </data>
+  <data name="InviteCodeRequired" xml:space="preserve">
+    <value>Invite code is required.</value>
+  </data>
+  <data name="InviteCodeInvalid" xml:space="preserve">
+    <value>Enter a valid invite code.</value>
+  </data>
+  <data name="DisplayNameTooLong" xml:space="preserve">
+    <value>Name can be at most 40 characters.</value>
+  </data>
+  <data name="BioTooLong" xml:space="preserve">
+    <value>Bio can be at most 160 characters.</value>
+  </data>
+  <data name="TooManyAreas" xml:space="preserve">
+    <value>You can pick up to 6 areas.</value>
+  </data>
+  <data name="AreaTooLong" xml:space="preserve">
+    <value>An area can be at most {0} characters.</value>
+  </data>
+  <data name="CurrentPasswordRequired" xml:space="preserve">
+    <value>Enter your current password.</value>
+  </data>
+  <data name="CurrentPasswordWrong" xml:space="preserve">
+    <value>Your current password is incorrect.</value>
+  </data>
+  <data name="NewPasswordRequired" xml:space="preserve">
+    <value>New password is required.</value>
+  </data>
+  <data name="RoutineNameRequired" xml:space="preserve">
+    <value>Routine name is required.</value>
+  </data>
+  <data name="RoutineNameTooLong" xml:space="preserve">
+    <value>Routine name can be at most 40 characters.</value>
+  </data>
+  <data name="RoutineTypeRequired" xml:space="preserve">
+    <value>Routine type is required.</value>
+  </data>
+  <data name="TargetRange" xml:space="preserve">
+    <value>Target must be between 1 and 1,000,000.</value>
+  </data>
+  <data name="UnitTooLong" xml:space="preserve">
+    <value>Unit can be at most 16 characters.</value>
+  </data>
+  <data name="CountTargetRequired" xml:space="preserve">
+    <value>Enter a target for a count routine.</value>
+  </data>
+  <data name="EmailTaken" xml:space="preserve">
+    <value>This email is already registered.</value>
+  </data>
+  <data name="UserNameTaken" xml:space="preserve">
+    <value>This username is taken.</value>
+  </data>
+  <data name="EmailOrUserNameTaken" xml:space="preserve">
+    <value>This email or username is already registered.</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Incorrect email or password.</value>
+  </data>
+  <data name="CodeWrong" xml:space="preserve">
+    <value>Incorrect code. {0} attempts left.</value>
+  </data>
+  <data name="CodeWrongLastAttempt" xml:space="preserve">
+    <value>Incorrect code. 1 attempt left.</value>
+  </data>
+  <data name="TooManyAttempts" xml:space="preserve">
+    <value>Too many incorrect attempts. Request a new code.</value>
+  </data>
+  <data name="CodeExpired" xml:space="preserve">
+    <value>Your code has expired. Request a new code.</value>
+  </data>
+  <data name="EmailAlreadyVerified" xml:space="preserve">
+    <value>Your email is already verified.</value>
+  </data>
+  <data name="CodeSendFailed" xml:space="preserve">
+    <value>Couldn't send the code. Try again in a bit.</value>
+  </data>
+  <data name="ResendWait" xml:space="preserve">
+    <value>Please wait {0}s before requesting a new code.</value>
+  </data>
+  <data name="FutureDay" xml:space="preserve">
+    <value>You can't view a future day.</value>
+  </data>
+  <data name="HistoryRangeTooLong" xml:space="preserve">
+    <value>The date range can be at most {0} days.</value>
+  </data>
+  <data name="RoutineNotActive" xml:space="preserve">
+    <value>This routine wasn't active that day.</value>
+  </data>
+  <data name="CheckValueInvalid" xml:space="preserve">
+    <value>Value must be 0 or 1 for this routine.</value>
+  </data>
+  <data name="DayNotEditable" xml:space="preserve">
+    <value>Only today and yesterday can be edited.</value>
+  </data>
+  <data name="RoutineLimit" xml:space="preserve">
+    <value>You can have at most {0} routines.</value>
+  </data>
+  <data name="GroupLimit" xml:space="preserve">
+    <value>You can be in at most {0} groups.</value>
+  </data>
+  <data name="GroupNotFoundByCode" xml:space="preserve">
+    <value>No group found for this code.</value>
+  </data>
+  <data name="GroupFull" xml:space="preserve">
+    <value>This group is full.</value>
+  </data>
+  <data name="OnlyOwnerCanResetCode" xml:space="preserve">
+    <value>Only the group owner can reset the invite code.</value>
+  </data>
+  <data name="VerificationEmailSubject" xml:space="preserve">
+    <value>{0} is your maxxing verification code</value>
+  </data>
+  <data name="VerificationEmailBody" xml:space="preserve">
+    <value>Hi @{0},
+
+Enter this code in the app to verify your email address:
+
+    {1}
+
+The code is valid for {2} minutes. If you didn't create this account, you can ignore this email.</value>
+  </data>
+</root>

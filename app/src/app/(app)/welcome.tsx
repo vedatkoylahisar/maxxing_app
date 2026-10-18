@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -19,6 +20,7 @@ import { colors, fonts } from '@/theme';
 
 // Kayıttan hemen sonra: "Ne için buradasın?" → seçime göre önerilen rutinler.
 export default function Welcome() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const { session } = useSession();
   const [catalog, setCatalog] = useState<CatalogArea[] | null>(null);
@@ -31,8 +33,8 @@ export default function Welcome() {
   useEffect(() => {
     getAreaCatalog()
       .then(setCatalog)
-      .catch(() => setMessage('Liste yüklenemedi.'));
-  }, []);
+      .catch(() => setMessage(t('welcome.catalogFailed')));
+  }, [t]);
 
   // Seçilen alanların önerileri; aynı isimli olanlar bir kez.
   const suggestions: RoutineInput[] = [];
@@ -58,7 +60,7 @@ export default function Welcome() {
       setPicked(names);
       setStep('routines');
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Kaydedilemedi.');
+      setMessage(error instanceof ApiError ? error.message : t('common.couldNotSave'));
     } finally {
       setBusy(false);
     }
@@ -71,7 +73,7 @@ export default function Welcome() {
       for (const s of suggestions.filter((x) => picked.has(x.name))) await api((t) => createRoutine(t, s));
       finish();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Rutinler eklenemedi.');
+      setMessage(error instanceof ApiError ? error.message : t('welcome.routinesFailed'));
       setBusy(false);
     }
   }
@@ -90,7 +92,7 @@ export default function Welcome() {
       <View style={styles.top}>
         <Brand />
         <Pressable onPress={finish} accessibilityRole="button" hitSlop={8}>
-          <Text style={styles.skip}>Şimdilik geç</Text>
+          <Text style={styles.skip}>{t('welcome.skip')}</Text>
         </Pressable>
       </View>
 
@@ -99,10 +101,11 @@ export default function Welcome() {
       {step === 'areas' ? (
         <>
           <Text style={styles.title}>
-            Hoş geldin{session ? `, @${session.user.userName}` : ''}.{'\n'}
-            <Text style={styles.accent}>Ne için buradasın?</Text>
+            {session ? t('welcome.greeting', { userName: session.user.userName }) : t('welcome.greetingNoName')}
+            {'\n'}
+            <Text style={styles.accent}>{t('welcome.question')}</Text>
           </Text>
-          <Text style={styles.subtitle}>Birden fazla seçebilirsin. Sana uygun rutinler önerelim.</Text>
+          <Text style={styles.subtitle}>{t('welcome.areasSubtitle')}</Text>
           {!catalog ? (
             <View style={styles.loading}>
               {message ? <FormMessage message={message} /> : <ActivityIndicator color={colors.accent} />}
@@ -111,17 +114,17 @@ export default function Welcome() {
             <View style={styles.body}>
               <AreaPicker catalog={catalog} value={areas} onChange={setAreas} />
               <FormMessage message={message} />
-              <Button title={areas.length ? 'Devam' : 'Seçmeden devam et'} onPress={saveAreas} loading={busy} />
+              <Button title={areas.length ? t('welcome.continue') : t('welcome.continueWithout')} onPress={saveAreas} loading={busy} />
             </View>
           )}
         </>
       ) : (
         <>
           <Text style={styles.title}>
-            Bunlarla{'\n'}
-            <Text style={styles.accent}>başlayalım mı?</Text>
+            {t('welcome.routinesTitle')}
+            <Text style={styles.accent}>{t('welcome.routinesTitleAccent')}</Text>
           </Text>
-          <Text style={styles.subtitle}>İstemediklerini kaldır. Hepsini sonra Rutinler sayfasından değiştirebilirsin.</Text>
+          <Text style={styles.subtitle}>{t('welcome.routinesSubtitle')}</Text>
           <View style={styles.body}>
             <View style={styles.list}>
               {suggestions.map((s) => {
@@ -151,7 +154,7 @@ export default function Welcome() {
             </View>
             <FormMessage message={message} />
             <Button
-              title={picked.size ? `${picked.size} rutini ekle` : 'Rutinsiz devam et'}
+              title={picked.size ? t('welcome.addRoutines', { count: picked.size }) : t('welcome.continueWithoutRoutines')}
               onPress={picked.size ? addRoutines : finish}
               loading={busy}
             />

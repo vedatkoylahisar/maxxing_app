@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations;
 namespace maxxing_app.Contracts;
 
 public record CreateGroupRequest(
-    [Required(ErrorMessage = "Grup adı gerekli.")]
-    [MaxLength(40, ErrorMessage = "Grup adı en fazla 40 karakter olabilir.")]
+    [Required(ErrorMessage = "GroupNameRequired")]
+    [MaxLength(40, ErrorMessage = "GroupNameTooLong")]
     string Name);
 
 public record JoinGroupRequest(
-    [Required(ErrorMessage = "Davet kodu gerekli.")]
-    [MaxLength(16, ErrorMessage = "Geçerli bir davet kodu gir.")]
+    [Required(ErrorMessage = "InviteCodeRequired")]
+    [MaxLength(16, ErrorMessage = "InviteCodeInvalid")]
     string Code);
 
 public record GroupResponse(Guid Id, string Name, string InviteCode, int MemberCount, bool IsOwner);

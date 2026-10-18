@@ -1,9 +1,10 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
-import { createRoutine, listRoutines, ROUTINE_SUGGESTIONS, type Routine, type RoutineInput } from '@/api/routines';
+import { createRoutine, listRoutines, routineSuggestions, type Routine, type RoutineInput } from '@/api/routines';
 import { useAuthedApi } from '@/auth/useAuthedApi';
 import { Button } from '@/components/Button';
 import { Card, CardLabel } from '@/components/Card';
@@ -13,9 +14,11 @@ import type { PressState } from '@/components/pressableState';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { describeRoutine, SuggestionChips } from '@/components/SuggestionChips';
+import { lower } from '@/dates';
 import { colors, fonts } from '@/theme';
 
 export default function Routines() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const [routines, setRoutines] = useState<Routine[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -26,9 +29,9 @@ export default function Routines() {
       setRoutines(await api(listRoutines));
       setMessage(null);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Bir şeyler ters gitti.');
+      setMessage(error instanceof ApiError ? error.message : t('common.somethingWrong'));
     }
-  }, [api]);
+  }, [api, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -37,8 +40,8 @@ export default function Routines() {
   );
 
   // Zaten eklenmiş önerileri gösterme.
-  const names = new Set(routines?.map((r) => r.name.toLocaleLowerCase('tr-TR')));
-  const suggestions = ROUTINE_SUGGESTIONS.filter((s) => !names.has(s.name.toLocaleLowerCase('tr-TR')));
+  const names = new Set(routines?.map((r) => lower(r.name)));
+  const suggestions = routineSuggestions().filter((s) => !names.has(lower(s.name)));
 
   async function addSuggestion(input: RoutineInput) {
     setAdding(input.name);
@@ -46,7 +49,7 @@ export default function Routines() {
       await api((t) => createRoutine(t, input));
       await load();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Rutin eklenemedi.');
+      setMessage(error instanceof ApiError ? error.message : t('today.addFailed'));
     } finally {
       setAdding(null);
     }
@@ -54,8 +57,8 @@ export default function Routines() {
 
   return (
     <Screen>
-      <ScreenHeader title="Rutinlerin" />
-      <Text style={styles.intro}>Her gün tikleyeceğin şeyler. Bir rutine dokunup düzenleyebilirsin.</Text>
+      <ScreenHeader title={t('routines.title')} />
+      <Text style={styles.intro}>{t('routines.intro')}</Text>
 
       {message ? (
         <View style={styles.message}>
@@ -96,16 +99,16 @@ export default function Routines() {
                 <Text style={styles.chevron}>›</Text>
               </Pressable>
             ))}
-            {routines.length === 0 ? <Text style={styles.none}>Henüz rutinin yok.</Text> : null}
+            {routines.length === 0 ? <Text style={styles.none}>{t('routines.none')}</Text> : null}
           </View>
 
           <View style={styles.newButton}>
-            <Button title="Yeni rutin" onPress={() => router.push('/routines/new')} />
+            <Button title={t('routines.new')} onPress={() => router.push('/routines/new')} />
           </View>
 
           {suggestions.length > 0 ? (
             <Card style={styles.suggestions}>
-              <CardLabel>HIZLI EKLE</CardLabel>
+              <CardLabel>{t('routines.quickAdd')}</CardLabel>
               <SuggestionChips suggestions={suggestions} adding={adding} onPick={addSuggestion} />
             </Card>
           ) : null}

@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, type TextInputInstance } from 'react-native';
 
 import { register } from '@/api/auth';
@@ -18,6 +19,7 @@ import { colors, fonts } from '@/theme';
 const EMPTY_30_DAYS = Array.from({ length: 30 }, () => 0);
 
 export default function SignUp() {
+  const { t } = useTranslation();
   const { signIn } = useSession();
   const userNameRef = useRef<TextInputInstance>(null);
   const passwordRef = useRef<TextInputInstance>(null);
@@ -47,7 +49,7 @@ export default function SignUp() {
         setErrors(error.fieldErrors);
         setMessage(error.message);
       } else {
-        setMessage('Bir şeyler ters gitti.');
+        setMessage(t('common.somethingWrong'));
       }
       setLoading(false);
     }
@@ -59,25 +61,25 @@ export default function SignUp() {
 
       <View style={styles.hero}>
         <View style={styles.gridHeader}>
-          <Text style={styles.gridLabel}>SENİN İLK 30 GÜNÜN</Text>
-          <Text style={styles.dayOne}>1. gün</Text>
+          <Text style={styles.gridLabel}>{t('signUp.gridLabel')}</Text>
+          <Text style={styles.dayOne}>{t('signUp.dayOne')}</Text>
         </View>
         <HabitGrid levels={EMPTY_30_DAYS} pulseIndex={0} />
       </View>
 
       <Text style={styles.title}>
-        Seriye{'\n'}
-        <Text style={styles.titleAccent}>başla.</Text>
+        {t('signUp.title')}
+        <Text style={styles.titleAccent}>{t('signUp.titleAccent')}</Text>
       </Text>
-      <Text style={styles.subtitle}>Bir dakikada hesabını aç, ilk rutinini bugün tikle.</Text>
+      <Text style={styles.subtitle}>{t('signUp.subtitle')}</Text>
 
       <View style={styles.form}>
         <TextField
-          label="E-posta"
+          label={t('auth.email')}
           value={email}
           onChangeText={setEmail}
           error={errors.email}
-          placeholder="sen@ornek.com"
+          placeholder={t('auth.emailPlaceholder')}
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -86,13 +88,13 @@ export default function SignUp() {
         />
         <TextField
           ref={userNameRef}
-          label="Kullanıcı adı"
+          label={t('signUp.userName')}
           prefix="@"
           value={userName}
           onChangeText={(text) => setUserName(text.toLowerCase())}
           error={errors.userName}
-          hint="Arkadaşların seni bununla görecek."
-          placeholder="kullanici_adi"
+          hint={t('signUp.userNameHint')}
+          placeholder={t('signUp.userNamePlaceholder')}
           autoCapitalize="none"
           autoCorrect={false}
           autoComplete="username-new"
@@ -102,11 +104,11 @@ export default function SignUp() {
         />
         <TextField
           ref={passwordRef}
-          label="Şifre"
+          label={t('auth.password')}
           value={password}
           onChangeText={setPassword}
           error={errors.password}
-          hint={password.length >= 8 ? 'Şifre uygun.' : 'En az 8 karakter.'}
+          hint={password.length >= 8 ? t('signUp.passwordOk') : t('auth.passwordHint')}
           placeholder="••••••••"
           secureToggle
           autoComplete="new-password"
@@ -114,13 +116,13 @@ export default function SignUp() {
           onSubmitEditing={submit}
         />
         <FormMessage message={message} />
-        <Button title="Hesap oluştur" onPress={submit} loading={loading} />
+        <Button title={t('signUp.submit')} onPress={submit} loading={loading} />
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Zaten hesabın var mı? </Text>
+        <Text style={styles.footerText}>{t('signUp.haveAccount')}</Text>
         <Link href="/sign-in" replace style={styles.footerLink}>
-          Giriş yap
+          {t('signUp.signInLink')}
         </Link>
       </View>
     </Screen>

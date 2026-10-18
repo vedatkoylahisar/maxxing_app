@@ -4,10 +4,10 @@ using maxxing_app.Models;
 namespace maxxing_app.Contracts;
 
 public record SetEntryRequest(
-    [Range(0, 1_000_000, ErrorMessage = "Değer 0 ile 1.000.000 arasında olmalı.")] int Value);
+    [Range(0, 1_000_000, ErrorMessage = "EntryValueRange")] int Value);
 
 public record SetNoteRequest(
-    [MaxLength(2000, ErrorMessage = "Not en fazla 2000 karakter olabilir.")] string? Text);
+    [MaxLength(2000, ErrorMessage = "NoteTooLong")] string? Text);
 
 public record DayRoutineResponse(
     Guid Id,

@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -14,6 +15,7 @@ import { TextField } from '@/components/TextField';
 import { colors, fonts } from '@/theme';
 
 export default function EditProfile() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const [catalog, setCatalog] = useState<CatalogArea[] | null>(null);
   const [displayName, setDisplayName] = useState('');
@@ -33,8 +35,8 @@ export default function EditProfile() {
         setAreas(areaValues(profile.areas));
         setUserName(profile.userName);
       })
-      .catch((error) => setMessage(error instanceof ApiError ? error.message : 'Profil yüklenemedi.'));
-  }, [api]);
+      .catch((error) => setMessage(error instanceof ApiError ? error.message : t('person.loadFailed')));
+  }, [api, t]);
 
   async function save() {
     setSaving(true);
@@ -47,7 +49,7 @@ export default function EditProfile() {
         setErrors(error.fieldErrors);
         setMessage(error.message);
       } else {
-        setMessage('Kaydedilemedi.');
+        setMessage(t('common.couldNotSave'));
       }
       setSaving(false);
     }
@@ -55,7 +57,7 @@ export default function EditProfile() {
 
   return (
     <Screen>
-      <ScreenHeader title="Profili düzenle" />
+      <ScreenHeader title={t('editProfile.title')} />
 
       {!catalog ? (
         <View style={styles.loading}>
@@ -64,30 +66,30 @@ export default function EditProfile() {
       ) : (
         <View style={styles.form}>
           <TextField
-            label="Görünen ad"
+            label={t('editProfile.displayName')}
             value={displayName}
             onChangeText={setDisplayName}
             error={errors.displayName}
-            hint={`Boş bırakırsan @${userName} görünür.`}
-            placeholder="Adın"
+            hint={t('editProfile.displayNameHint', { userName })}
+            placeholder={t('editProfile.displayNamePlaceholder')}
             maxLength={40}
           />
           <TextField
-            label="Bio"
+            label={t('editProfile.bio')}
             value={bio}
             onChangeText={setBio}
             error={errors.bio}
             hint={`${bio.length}/160`}
-            placeholder="YKS 2027 · her gün 100 soru"
+            placeholder={t('editProfile.bioPlaceholder')}
             maxLength={160}
           />
           <View style={styles.areas}>
-            <Text style={styles.label}>Ne için buradasın?</Text>
+            <Text style={styles.label}>{t('welcome.question')}</Text>
             <AreaPicker catalog={catalog} value={areas} onChange={setAreas} />
             {errors.areas ? <Text style={styles.error}>{errors.areas}</Text> : null}
           </View>
           <FormMessage message={message} />
-          <Button title="Kaydet" onPress={save} loading={saving} />
+          <Button title={t('common.save')} onPress={save} loading={saving} />
         </View>
       )}
     </Screen>

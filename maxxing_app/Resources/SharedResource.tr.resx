@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>E-posta gerekli.</value>
+  </data>
+  <data name="EmailInvalid" xml:space="preserve">
+    <value>Geçerli bir e-posta gir.</value>
+  </data>
+  <data name="EmailTooLong" xml:space="preserve">
+    <value>E-posta en fazla 256 karakter olabilir.</value>
+  </data>
+  <data name="UserNameRequired" xml:space="preserve">
+    <value>Kullanıcı adı gerekli.</value>
+  </data>
+  <data name="UserNameInvalid" xml:space="preserve">
+    <value>Kullanıcı adı 3-20 karakter olmalı; sadece harf, rakam, _ ve . içerebilir.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Şifre gerekli.</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Şifre en az 8 karakter olmalı.</value>
+  </data>
+  <data name="PasswordTooLong" xml:space="preserve">
+    <value>Şifre en fazla 128 karakter olabilir.</value>
+  </data>
+  <data name="CodeRequired" xml:space="preserve">
+    <value>Kod gerekli.</value>
+  </data>
+  <data name="CodeInvalid" xml:space="preserve">
+    <value>Kod 6 haneli olmalı.</value>
+  </data>
+  <data name="EntryValueRange" xml:space="preserve">
+    <value>Değer 0 ile 1.000.000 arasında olmalı.</value>
+  </data>
+  <data name="NoteTooLong" xml:space="preserve">
+    <value>Not en fazla 2000 karakter olabilir.</value>
+  </data>
+  <data name="GroupNameRequired" xml:space="preserve">
+    <value>Grup adı gerekli.</value>
+  </data>
+  <data name="GroupNameTooLong" xml:space="preserve">
+    <value>Grup adı en fazla 40 karakter olabilir.</value>
+  </data>
+  <data name="InviteCodeRequired" xml:space="preserve">
+    <value>Davet kodu gerekli.</value>
+  </data>
+  <data name="InviteCodeInvalid" xml:space="preserve">
+    <value>Geçerli bir davet kodu gir.</value>
+  </data>
+  <data name="DisplayNameTooLong" xml:space="preserve">
+    <value>Ad en fazla 40 karakter olabilir.</value>
+  </data>
+  <data name="BioTooLong" xml:space="preserve">
+    <value>Bio en fazla 160 karakter olabilir.</value>
+  </data>
+  <data name="TooManyAreas" xml:space="preserve">
+    <value>En fazla 6 alan seçebilirsin.</value>
+  </data>
+  <data name="AreaTooLong" xml:space="preserve">
+    <value>Bir alan en fazla {0} karakter olabilir.</value>
+  </data>
+  <data name="CurrentPasswordRequired" xml:space="preserve">
+    <value>Mevcut şifreni gir.</value>
+  </data>
+  <data name="CurrentPasswordWrong" xml:space="preserve">
+    <value>Mevcut şifre yanlış.</value>
+  </data>
+  <data name="NewPasswordRequired" xml:space="preserve">
+    <value>Yeni şifre gerekli.</value>
+  </data>
+  <data name="RoutineNameRequired" xml:space="preserve">
+    <value>Rutin adı gerekli.</value>
+  </data>
+  <data name="RoutineNameTooLong" xml:space="preserve">
+    <value>Rutin adı en fazla 40 karakter olabilir.</value>
+  </data>
+  <data name="RoutineTypeRequired" xml:space="preserve">
+    <value>Rutin türü gerekli.</value>
+  </data>
+  <data name="TargetRange" xml:space="preserve">
+    <value>Hedef 1 ile 1.000.000 arasında olmalı.</value>
+  </data>
+  <data name="UnitTooLong" xml:space="preserve">
+    <value>Birim en fazla 16 karakter olabilir.</value>
+  </data>
+  <data name="CountTargetRequired" xml:space="preserve">
+    <value>Sayılı rutin için bir hedef gir.</value>
+  </data>
+  <data name="EmailTaken" xml:space="preserve">
+    <value>Bu e-posta zaten kayıtlı.</value>
+  </data>
+  <data name="UserNameTaken" xml:space="preserve">
+    <value>Bu kullanıcı adı alınmış.</value>
+  </data>
+  <data name="EmailOrUserNameTaken" xml:space="preserve">
+    <value>Bu e-posta veya kullanıcı adı zaten kayıtlı.</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>E-posta veya şifre hatalı.</value>
+  </data>
+  <data name="CodeWrong" xml:space="preserve">
+    <value>Kod hatalı. {0} deneme hakkın kaldı.</value>
+  </data>
+  <data name="CodeWrongLastAttempt" xml:space="preserve">
+    <value>Kod hatalı. 1 deneme hakkın kaldı.</value>
+  </data>
+  <data name="TooManyAttempts" xml:space="preserve">
+    <value>Çok fazla hatalı deneme. Yeni kod iste.</value>
+  </data>
+  <data name="CodeExpired" xml:space="preserve">
+    <value>Kodun süresi doldu. Yeni kod iste.</value>
+  </data>
+  <data name="EmailAlreadyVerified" xml:space="preserve">
+    <value>E-postan zaten onaylı.</value>
+  </data>
+  <data name="CodeSendFailed" xml:space="preserve">
+    <value>Kod gönderilemedi. Biraz sonra tekrar dene.</value>
+  </data>
+  <data name="ResendWait" xml:space="preserve">
+    <value>Yeni kod için {0} saniye bekle.</value>
+  </data>
+  <data name="FutureDay" xml:space="preserve">
+    <value>Gelecekteki bir gün görüntülenemez.</value>
+  </data>
+  <data name="HistoryRangeTooLong" xml:space="preserve">
+    <value>Tarih aralığı en fazla {0} gün olabilir.</value>
+  </data>
+  <data name="RoutineNotActive" xml:space="preserve">
+    <value>Bu rutin o gün aktif değildi.</value>
+  </data>
+  <data name="CheckValueInvalid" xml:space="preserve">
+    <value>Bu rutin için değer 0 ya da 1 olmalı.</value>
+  </data>
+  <data name="DayNotEditable" xml:space="preserve">
+    <value>Sadece bugün ve dün düzenlenebilir.</value>
+  </data>
+  <data name="RoutineLimit" xml:space="preserve">
+    <value>En fazla {0} rutinin olabilir.</value>
+  </data>
+  <data name="GroupLimit" xml:space="preserve">
+    <value>En fazla {0} grupta olabilirsin.</value>
+  </data>
+  <data name="GroupNotFoundByCode" xml:space="preserve">
+    <value>Bu koda ait bir grup yok.</value>
+  </data>
+  <data name="GroupFull" xml:space="preserve">
+    <value>Bu grup dolu.</value>
+  </data>
+  <data name="OnlyOwnerCanResetCode" xml:space="preserve">
+    <value>Davet kodunu sadece grubun sahibi yenileyebilir.</value>
+  </data>
+  <data name="VerificationEmailSubject" xml:space="preserve">
+    <value>{0} - maxxing doğrulama kodun</value>
+  </data>
+  <data name="VerificationEmailBody" xml:space="preserve">
+    <value>Merhaba @{0},
+
+E-posta adresini onaylamak için bu kodu uygulamaya gir:
+
+    {1}
+
+Kod {2} dakika geçerli. Bu hesabı sen açmadıysan bu e-postayı yok sayabilirsin.</value>
+  </data>
+</root>

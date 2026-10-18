@@ -1,8 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using maxxing_app.Data;
+using maxxing_app.Localization;
 using maxxing_app.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Npgsql;
 
 namespace maxxing_app.Email;
@@ -19,7 +21,7 @@ public enum VerifyCodeStatus
 public record VerifyCodeResult(VerifyCodeStatus Status, int AttemptsLeft = 0);
 
 // E-postaya giden 6 haneli kodlar: e-posta doğrulama (ileride şifre sıfırlama da aynı altyapıyı kullanır).
-public class EmailCodeService(AppDbContext db, IEmailSender emailSender)
+public class EmailCodeService(AppDbContext db, IEmailSender emailSender, IStringLocalizer<SharedResource> localizer)
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(15);
 
@@ -114,19 +116,16 @@ public class EmailCodeService(AppDbContext db, IEmailSender emailSender)
     private static string Hash(Guid userId, string code) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{userId}:{code}")));
 
-    private static (string Subject, string Text) Compose(User user, EmailCodePurpose purpose, string code) => purpose switch
+    // Mail, isteğin değil kullanıcının dilinde yazılır (User.Language).
+    private (string Subject, string Text) Compose(User user, EmailCodePurpose purpose, string code)
     {
-        EmailCodePurpose.EmailVerification => (
-            $"{code} - maxxing doğrulama kodun",
-            $"""
-            Merhaba @{user.UserName},
-
-            E-posta adresini onaylamak için bu kodu uygulamaya gir:
-
-                {code}
-
-            Kod {Lifetime.TotalMinutes} dakika geçerli. Bu hesabı sen açmadıysan bu e-postayı yok sayabilirsin.
-            """),
-        _ => throw new ArgumentOutOfRangeException(nameof(purpose)),
-    };
+        using var _ = Languages.Use(user.Language);
+        return purpose switch
+        {
+            EmailCodePurpose.EmailVerification => (
+                localizer["VerificationEmailSubject", code],
+                localizer["VerificationEmailBody", user.UserName, code, Lifetime.TotalMinutes]),
+            _ => throw new ArgumentOutOfRangeException(nameof(purpose)),
+        };
+    }
 }

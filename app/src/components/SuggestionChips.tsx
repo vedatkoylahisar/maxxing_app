@@ -2,12 +2,13 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import type { RoutineInput } from '@/api/routines';
 import { formatNumber } from '@/dates';
+import i18n from '@/i18n';
 import { colors, fonts } from '@/theme';
 import type { PressState } from './pressableState';
 
 export function describeRoutine(r: { type: string; target?: number | null; unit?: string | null }) {
-  if (r.type === 'check') return 'Her gün · yaptım / yapmadım';
-  return `Her gün · hedef ${formatNumber(r.target ?? 1)}${r.unit ? ` ${r.unit}` : ''}`;
+  if (r.type === 'check') return i18n.t('routineInfo.check');
+  return i18n.t('routineInfo.count', { target: formatNumber(r.target ?? 1) }) + (r.unit ? ` ${r.unit}` : '');
 }
 
 export function SuggestionChips({

@@ -1,4 +1,5 @@
 import { useState, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputInstance, type TextInputProps } from 'react-native';
 
 import { colors, fonts, webInputReset } from '@/theme';
@@ -23,6 +24,7 @@ export function TextField({
   onBlur,
   ...inputProps
 }: Props) {
+  const { t } = useTranslation();
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(true);
 
@@ -49,7 +51,7 @@ export function TextField({
         />
         {secureToggle ? (
           <Pressable onPress={() => setHidden((h) => !h)} hitSlop={10} style={styles.toggle}>
-            <Text style={styles.toggleText}>{hidden ? 'Göster' : 'Gizle'}</Text>
+            <Text style={styles.toggleText}>{hidden ? t('common.show') : t('common.hide')}</Text>
           </Pressable>
         ) : null}
       </View>

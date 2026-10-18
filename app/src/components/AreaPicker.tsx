@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { CatalogArea } from '@/api/profile';
+import { lower } from '@/dates';
 import { colors, fonts, webInputReset } from '@/theme';
 import type { PressState } from './pressableState';
 
@@ -17,6 +19,7 @@ export function AreaPicker({
   value: string[];
   onChange: (value: string[]) => void;
 }) {
+  const { t } = useTranslation();
   const [custom, setCustom] = useState('');
   const keys = new Set(catalog.map((a) => a.key));
   const customAreas = value.filter((v) => !keys.has(v));
@@ -30,7 +33,7 @@ export function AreaPicker({
   function addCustom() {
     const text = custom.trim();
     if (!text || full) return;
-    if (!value.some((v) => v.toLocaleLowerCase('tr-TR') === text.toLocaleLowerCase('tr-TR'))) onChange([...value, text]);
+    if (!value.some((v) => lower(v) === lower(text))) onChange([...value, text]);
     setCustom('');
   }
 
@@ -58,7 +61,7 @@ export function AreaPicker({
           onSubmitEditing={addCustom}
           editable={!full}
           maxLength={30}
-          placeholder={full ? `En fazla ${MAX_AREAS} alan` : 'Listede yok mu? Kendin yaz…'}
+          placeholder={full ? t('areaPicker.max', { count: MAX_AREAS }) : t('areaPicker.customPlaceholder')}
           placeholderTextColor={colors.textFaint}
           selectionColor={colors.accent}
           returnKeyType="done"
@@ -74,7 +77,7 @@ export function AreaPicker({
             ((state as PressState).hovered || state.pressed) && styles.addButtonActive,
           ]}
         >
-          <Text style={styles.addText}>Ekle</Text>
+          <Text style={styles.addText}>{t('areaPicker.add')}</Text>
         </Pressable>
       </View>
     </View>

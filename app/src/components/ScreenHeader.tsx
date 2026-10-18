@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, fonts } from '@/theme';
@@ -6,6 +7,8 @@ import type { PressState } from './pressableState';
 
 // Alt sayfaların başlığı: geri butonu + başlık.
 export function ScreenHeader({ title }: { title: string }) {
+  const { t } = useTranslation();
+
   function goBack() {
     if (router.canGoBack()) router.back();
     else router.replace('/');
@@ -16,7 +19,7 @@ export function ScreenHeader({ title }: { title: string }) {
       <Pressable
         onPress={goBack}
         accessibilityRole="button"
-        accessibilityLabel="Geri"
+        accessibilityLabel={t('common.back')}
         hitSlop={8}
         style={(state) => [styles.back, ((state as PressState).hovered || state.pressed) && styles.backActive]}
       >

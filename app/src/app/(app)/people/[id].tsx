@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -14,6 +15,7 @@ import { colors, fonts } from '@/theme';
 // Gruptaki bir arkadaşın profili. Sadece aynı gruptaysanız açılır.
 export default function PersonProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -27,15 +29,15 @@ export default function PersonProfile() {
       .catch((error) =>
         setMessage(
           error instanceof ApiError && error.status === 404
-            ? 'Bu profili göremezsin. Sadece aynı gruptaki arkadaşlarının profili görünür.'
-            : 'Profil yüklenemedi.',
+            ? t('person.forbidden')
+            : t('person.loadFailed'),
         ),
       );
-  }, [api, id]);
+  }, [api, id, t]);
 
   return (
     <Screen>
-      <ScreenHeader title="Profil" />
+      <ScreenHeader title={t('person.title')} />
       {!profile ? (
         <View style={styles.loading}>
           {message ? <FormMessage message={message} /> : <ActivityIndicator color={colors.accent} />}
@@ -45,7 +47,7 @@ export default function PersonProfile() {
           <View style={styles.view}>
             <ProfileView profile={profile} />
           </View>
-          <Text style={styles.privacy}>Rutinlerinin adları ve notları gizli; sadece özet görünür.</Text>
+          <Text style={styles.privacy}>{t('person.privacy')}</Text>
         </>
       )}
     </Screen>

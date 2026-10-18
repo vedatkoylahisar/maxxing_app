@@ -4,7 +4,7 @@ Kullanıcıyla Türkçe konuş.
 
 ## Ürün
 
-Herkesin kullanabileceği, sosyal yönü olan bir gelişim takip uygulaması. Sadece "maxxing" (vücut, yüz) için değil: YKS'ye hazırlanan öğrenci, tıpçı, yazılımcı, iş, niş bir spor… herkes kendi alanında kullanır.
+Herkesin kullanabileceği, sosyal yönü olan bir gelişim takip uygulaması. Global çıkacak: Türkçe ve İngilizce. Sadece "maxxing" (vücut, yüz) için değil: YKS'ye hazırlanan öğrenci, tıpçı, yazılımcı, iş, niş bir spor… herkes kendi alanında kullanır.
 
 - **Alan seçimi (kayıtta):** "Ne için buradasın?" diye sorulur. Seçenekler geniş (YKS, body maxxing, face maxxing, yazılım, tıp, iş, spor…), birden fazla seçilebilir, listede yoksa kullanıcı kendisi yazar. Seçime göre hazır rutin önerileri sunulur ("rutin ekle"). Alan şimdilik sadece öneri için kullanılır; keşfet / tanımadığın kişileri bulma yok.
 - **Günlük kayıt:** Kullanıcı her gün rutinlerini tikler (spor yaptı mı, kaç adım yürüdü, cilt bakımı vb.) ve isterse o güne not yazar.
@@ -43,7 +43,9 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 ### Uygulama (`app/`)
 
 - Expo'ya özel kurallar `app/AGENTS.md` içinde: paketler `npx expo install` ile eklenir; Expo API'leri sürümden sürüme değiştiği için kod yazmadan önce SDK 58 dokümanına bakılır.
-- Sayfalar `app/src/app/` altında (Expo Router). Diğer kod `app/src/` altında: `api/` (API istekleri), `auth/` (oturum, token saklama, form doğrulama), `components/`, `theme.ts`.
+- Sayfalar `app/src/app/` altında (Expo Router). Diğer kod `app/src/` altında: `api/` (API istekleri), `auth/` (oturum, form doğrulama), `i18n/` (diller), `components/`, `storage.ts` (oturum ve dil tercihini saklama), `theme.ts`.
+- **Diller: Türkçe ve İngilizce.** Cihaz dili Türkçe ise Türkçe, başka her dilde İngilizce (`i18n/index.ts`, `expo-localization` + `i18next`). Ekranlarda düz metin yazılmaz: her metin `i18n/tr.ts` ve `i18n/en.ts` içinde aynı anahtarla bulunur, ekranda `const { t } = useTranslation()` → `t('anahtar')`. Anahtarlar tip kontrollü; birinde eksik anahtar derleme hatası verir. Çoğul gereken yerde `_one` / `_other` + `{ count }`. Tarih ve sayı biçimleri `dates.ts` üzerinden dile göre. Elle dil seçimi için altyapı hazır: `setLanguage('en')` dili değiştirir ve hatırlar (profil ekranına seçici sonra eklenecek).
+- Kullanıcının yazdığı veriler (rutin adı, birim, not, grup adı) çevrilmez. Rutin önerileri dile göre ayrı listelerdir; eklenince kullanıcının verisi olur.
 - Giriş koruması kök `_layout.tsx` içinde `Stack.Protected` ile. Token telefonda `expo-secure-store`, web'de `localStorage` içinde.
 - API adresi: `EXPO_PUBLIC_API_URL` ortam değişkeni, yoksa `http://localhost:5055`.
 - Tasarım: koyu tema, tek vurgu rengi limon yeşili (`#D4FF3A`), başlıklar Unbounded, metinler Manrope. Renk ve fontlar sadece `theme.ts`'den alınır.
@@ -57,6 +59,7 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 - JWT anahtarı: `appsettings.Development.json` → `Jwt:Key` (yalnızca yerel geliştirme için). Production'da `Jwt__Key` ortam değişkeni; anahtar yoksa ya da 32 karakterden kısaysa API açılmaz.
 - E-posta: `Email` ayarları (`EmailOptions`), gönderim `Email/IEmailSender` üzerinden (şimdilik SMTP, MailKit). Development'ta Mailpit: SMTP `localhost:1025`, gelen kutusu `http://localhost:8025`; mailler gerçek adrese gitmez. Production'da `Email__FromAddress`, `Email__SmtpHost`, `Email__SmtpUser`, `Email__SmtpPassword` ortam değişkenleri; `FromAddress` ya da `SmtpHost` yoksa API açılmaz.
 - E-posta doğrulama: varsayılan `[Authorize]` token'da `email_verified=true` ister; onaysız hesaplar sadece `AuthPolicies.AllowUnverified` kullanan endpoint'lere girer (`/auth/me`, `/auth/verify-email`, `/auth/verify-email/resend`). Kodlar `EmailCodes` tablosunda hash'li tutulur (`EmailCodeService`: 15 dk geçerli, 5 deneme, 60 sn tekrar gönderme beklemesi).
+- Diller (API): uygulama her istekte `Accept-Language` gönderir; Türkçe ise Türkçe, değilse İngilizce (`Localization/Languages.cs`, `UseRequestLocalization`). Kullanıcıya giden metinler `Resources/SharedResource.resx` (İngilizce) ve `SharedResource.tr.resx` (Türkçe) içinde; controller'larda `IStringLocalizer<SharedResource>` → `localizer["Anahtar"]`, Contracts'ta `ErrorMessage = "Anahtar"`. Yeni metin eklenirse iki dosyaya da eklenir. Alan kataloğu (`Profiles/AreaCatalog.cs`) metinleri kendi içinde iki dilli. `User.Language` kayıt ve girişte güncellenir; mailler bu dilde gider. `SharedResource.cs` `Resources/` klasörüne taşınmamalı (metinler bulunamaz).
 - CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).
 - Örnek istekler: `maxxing_app/maxxing_app.http` (kayıt, giriş, `/auth/me`, e-posta kodu doğrulama / tekrar gönderme).
 - Sağlık kontrolü: `GET /health` (veritabanı bağlantısını da kontrol eder).
@@ -81,6 +84,7 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 4. [x] Gruplar ve davet kodu: grup kur, 6 haneli kodla katıl, ayrıl, sahip kodu yeniler; grup sayfasında üyelerin sadece günlük özeti (x/y tamamladı, seri) görünür
 5. [x] Profil + alan seçimi: görünen ad, kısa bio, alanlar (kayıtta "ne için buradasın?" sorulur, profilden değiştirilir; seçime göre rutin önerileri), istatistikler (şu anki seri, en uzun seri, toplam tamamlanan gün), ayarlar (çıkış, şifre değiştir). Fotoğraf şimdilik yok, baş harf gösterilir. Grupta bir üyeye dokununca profil özeti görünür (ad, bio, alanlar, istatistikler); rutin adları ve notlar yine gizli.
 6. [x] E-posta doğrulama. Kayıttan sonra e-postaya 6 haneli kod gider (15 dk geçerli, "kodu tekrar gönder" var); kullanıcı kodu girene kadar uygulamaya giremez: profil oluşturma ("Ne için buradasın?"), rutinler, gruplar hiçbiri açılmaz, sadece "kodu gir" ekranı görünür. API bunu zorlar (onaysız hesabın token'ı korumalı endpoint'lerde reddedilir), istemci sadece ekranı gösterir. Geliştirmede mailler Docker'da Mailpit'e gider (`localhost:8025`, gerçek adrese gitmez); production'da Resend/Brevo/SendGrid gibi bir servis ve alan adı gerekir. Mevcut hesaplar (`vedatkoylahisar`) onaylı sayılır. İleride "şifremi unuttum" da aynı altyapıyı kullanır.
+   - [x] Çok dil (ara adım): Türkçe ve İngilizce; cihaz Türkçe ise Türkçe, değilse İngilizce. API hata mesajları, alan listesi ve mailler de iki dilli. İngilizcede "YKS" yerine genel sınav alanı ("Exams") görünür. Profilden elle dil seçimi sonra eklenecek (altyapı hazır).
 7. [ ] **Sıradaki iş:** Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
 8. [ ] Webde yayın:
    - Alan adı alınır; site ve API HTTPS ile bu alan adından açılır.

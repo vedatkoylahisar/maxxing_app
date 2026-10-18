@@ -6,6 +6,7 @@ using maxxing_app.Progress;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Npgsql;
 
 namespace maxxing_app.Controllers;
@@ -13,7 +14,7 @@ namespace maxxing_app.Controllers;
 [ApiController]
 [Authorize]
 [Route("days")]
-public class DaysController(AppDbContext db) : ControllerBase
+public class DaysController(AppDbContext db, IStringLocalizer<SharedResource> localizer) : ControllerBase
 {
     private const int MaxHistoryDays = 120;
 
@@ -31,7 +32,7 @@ public class DaysController(AppDbContext db) : ControllerBase
         var user = await CurrentUser();
         if (user is null) return Unauthorized();
         if (date > UserClock.Today(user))
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: "Gelecekteki bir gün görüntülenemez.");
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["FutureDay"]);
 
         return await BuildDay(user, date);
     }
@@ -46,7 +47,7 @@ public class DaysController(AppDbContext db) : ControllerBase
         var today = UserClock.Today(user);
         if (to > today) to = today;
         if (from > to || to.DayNumber - from.DayNumber >= MaxHistoryDays)
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: $"Tarih aralığı en fazla {MaxHistoryDays} gün olabilir.");
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["HistoryRangeTooLong", MaxHistoryDays]);
 
         var progress = new ProgressCalculator(await LoadRoutines(user.Id));
         var days = new List<DaySummaryResponse>();
@@ -68,9 +69,9 @@ public class DaysController(AppDbContext db) : ControllerBase
         var routine = await db.Routines.SingleOrDefaultAsync(r => r.Id == routineId && r.UserId == user.Id);
         if (routine is null) return NotFound();
         if (!routine.IsActiveOn(date))
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: "Bu rutin o gün aktif değildi.");
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["RoutineNotActive"]);
         if (routine.Type == RoutineType.Check && request.Value > 1)
-            return Problem(statusCode: StatusCodes.Status400BadRequest, title: "Bu rutin için değer 0 ya da 1 olmalı.");
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["CheckValueInvalid"]);
 
         var entry = await db.RoutineEntries.SingleOrDefaultAsync(e => e.RoutineId == routineId && e.Date == date);
         if (request.Value == 0)
@@ -173,7 +174,7 @@ public class DaysController(AppDbContext db) : ControllerBase
     }
 
     private ObjectResult NotEditable() =>
-        Problem(statusCode: StatusCodes.Status400BadRequest, title: "Sadece bugün ve dün düzenlenebilir.");
+        Problem(statusCode: StatusCodes.Status400BadRequest, title: localizer["DayNotEditable"]);
 
     // Aynı anda iki istek aynı kaydı oluşturmaya çalışırsa ikincisi 409 alır; istemci tekrar dener.
     private async Task<bool> TrySave()

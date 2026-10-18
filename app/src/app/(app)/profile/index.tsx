@@ -1,5 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
@@ -17,6 +18,7 @@ import { TextField } from '@/components/TextField';
 import { colors, fonts } from '@/theme';
 
 export default function MyProfile() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const { signOut } = useSession();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -27,9 +29,9 @@ export default function MyProfile() {
       setProfile(await api(getMyProfile));
       setMessage(null);
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Bir şeyler ters gitti.');
+      setMessage(error instanceof ApiError ? error.message : t('common.somethingWrong'));
     }
-  }, [api]);
+  }, [api, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -39,7 +41,7 @@ export default function MyProfile() {
 
   return (
     <Screen>
-      <ScreenHeader title="Profilin" />
+      <ScreenHeader title={t('profile.title')} />
 
       {message ? (
         <View style={styles.message}>
@@ -57,20 +59,20 @@ export default function MyProfile() {
             <ProfileView profile={profile} />
           </View>
           {!profile.bio && profile.areas.length === 0 ? (
-            <Text style={styles.empty}>Kendinden biraz bahset: ne için buradasın, neye çalışıyorsun?</Text>
+            <Text style={styles.empty}>{t('profile.empty')}</Text>
           ) : null}
           <View style={styles.edit}>
-            <Button title="Profili düzenle" variant="ghost" onPress={() => router.push('/profile/edit')} />
+            <Button title={t('profile.edit')} variant="ghost" onPress={() => router.push('/profile/edit')} />
           </View>
 
-          <Text style={styles.sectionTitle}>Ayarlar</Text>
+          <Text style={styles.sectionTitle}>{t('profile.settings')}</Text>
           <Card style={styles.card}>
-            <CardLabel>HESAP</CardLabel>
+            <CardLabel>{t('profile.account')}</CardLabel>
             <Text style={styles.email}>{profile.email}</Text>
           </Card>
           <PasswordCard />
           <View style={styles.signOut}>
-            <Button title="Çıkış yap" variant="ghost" onPress={signOut} />
+            <Button title={t('common.signOut')} variant="ghost" onPress={signOut} />
           </View>
         </>
       )}
@@ -79,6 +81,7 @@ export default function MyProfile() {
 }
 
 function PasswordCard() {
+  const { t } = useTranslation();
   const api = useAuthedApi();
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState('');
@@ -88,7 +91,7 @@ function PasswordCard() {
   const [done, setDone] = useState(false);
 
   async function save() {
-    const found = { currentPassword: current ? undefined : 'Mevcut şifreni gir.', newPassword: validatePassword(next) };
+    const found = { currentPassword: current ? undefined : t('profile.currentRequired'), newPassword: validatePassword(next) };
     setErrors(found);
     if (found.currentPassword || found.newPassword) return;
 
@@ -100,7 +103,7 @@ function PasswordCard() {
       setOpen(false);
       setDone(true);
     } catch (error) {
-      setErrors(error instanceof ApiError ? { ...error.fieldErrors, form: error.message } : { form: 'Değiştirilemedi.' });
+      setErrors(error instanceof ApiError ? { ...error.fieldErrors, form: error.message } : { form: t('profile.changeFailed') });
     } finally {
       setSaving(false);
     }
@@ -109,18 +112,18 @@ function PasswordCard() {
   if (!open) {
     return (
       <Card style={styles.card}>
-        <CardLabel>ŞİFRE</CardLabel>
-        {done ? <Text style={styles.done}>Şifren değiştirildi.</Text> : null}
-        <Button title="Şifreni değiştir" variant="ghost" onPress={() => setOpen(true)} />
+        <CardLabel>{t('profile.passwordLabel')}</CardLabel>
+        {done ? <Text style={styles.done}>{t('profile.passwordChanged')}</Text> : null}
+        <Button title={t('profile.changePassword')} variant="ghost" onPress={() => setOpen(true)} />
       </Card>
     );
   }
 
   return (
     <Card style={styles.card}>
-      <CardLabel>ŞİFRE</CardLabel>
+      <CardLabel>{t('profile.passwordLabel')}</CardLabel>
       <TextField
-        label="Mevcut şifre"
+        label={t('profile.currentPassword')}
         value={current}
         onChangeText={setCurrent}
         error={errors.currentPassword}
@@ -128,18 +131,18 @@ function PasswordCard() {
         autoComplete="current-password"
       />
       <TextField
-        label="Yeni şifre"
+        label={t('profile.newPassword')}
         value={next}
         onChangeText={setNext}
         error={errors.newPassword}
-        hint="En az 8 karakter."
+        hint={t('auth.passwordHint')}
         secureToggle
         autoComplete="new-password"
         onSubmitEditing={save}
       />
       {errors.form && !errors.currentPassword && !errors.newPassword ? <FormMessage message={errors.form} /> : null}
-      <Button title="Kaydet" onPress={save} loading={saving} />
-      <Button title="Vazgeç" variant="ghost" onPress={() => setOpen(false)} />
+      <Button title={t('common.save')} onPress={save} loading={saving} />
+      <Button title={t('common.cancel')} variant="ghost" onPress={() => setOpen(false)} />
     </Card>
   );
 }

@@ -3,28 +3,28 @@ using System.ComponentModel.DataAnnotations;
 namespace maxxing_app.Contracts;
 
 public record RegisterRequest(
-    [Required(ErrorMessage = "E-posta gerekli.")]
-    [EmailAddress(ErrorMessage = "Geçerli bir e-posta gir.")]
-    [MaxLength(256, ErrorMessage = "E-posta en fazla 256 karakter olabilir.")]
+    [Required(ErrorMessage = "EmailRequired")]
+    [EmailAddress(ErrorMessage = "EmailInvalid")]
+    [MaxLength(256, ErrorMessage = "EmailTooLong")]
     string Email,
-    [Required(ErrorMessage = "Kullanıcı adı gerekli.")]
+    [Required(ErrorMessage = "UserNameRequired")]
     [RegularExpression("^[a-zA-Z0-9_.]{3,20}$",
-        ErrorMessage = "Kullanıcı adı 3-20 karakter olmalı; sadece harf, rakam, _ ve . içerebilir.")]
+        ErrorMessage = "UserNameInvalid")]
     string UserName,
-    [Required(ErrorMessage = "Şifre gerekli.")]
-    [MinLength(8, ErrorMessage = "Şifre en az 8 karakter olmalı.")]
-    [MaxLength(128, ErrorMessage = "Şifre en fazla 128 karakter olabilir.")]
+    [Required(ErrorMessage = "PasswordRequired")]
+    [MinLength(8, ErrorMessage = "PasswordTooShort")]
+    [MaxLength(128, ErrorMessage = "PasswordTooLong")]
     string Password,
     // Cihazın IANA saat dilimi (örn. "Europe/Istanbul"). Gönderilmezse ya da geçersizse varsayılan kullanılır.
     [MaxLength(64)] string? TimeZone = null);
 
 public record LoginRequest(
-    [Required(ErrorMessage = "E-posta gerekli.")] string Email,
-    [Required(ErrorMessage = "Şifre gerekli.")] string Password);
+    [Required(ErrorMessage = "EmailRequired")] string Email,
+    [Required(ErrorMessage = "PasswordRequired")] string Password);
 
 public record VerifyEmailRequest(
-    [Required(ErrorMessage = "Kod gerekli.")]
-    [RegularExpression("^[0-9]{6}$", ErrorMessage = "Kod 6 haneli olmalı.")]
+    [Required(ErrorMessage = "CodeRequired")]
+    [RegularExpression("^[0-9]{6}$", ErrorMessage = "CodeInvalid")]
     string Code);
 
 public record UserResponse(Guid Id, string Email, string UserName, bool EmailVerified, DateTime CreatedAt);
