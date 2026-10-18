@@ -33,7 +33,7 @@ Tüm iş kuralları API'de yaşar: kimlik doğrulama, kim neyi görebilir, seri 
 ## Geliştirme
 
 ```
-docker compose up -d                 # PostgreSQL (container: maxxing_db, volume: maxxing_pgdata)
+docker compose up -d                 # PostgreSQL (container: maxxing_db, volume: maxxing_pgdata) + Mailpit (maxxing_mail)
 dotnet run --project maxxing_app     # API -> http://localhost:5055
 dotnet ef migrations add <Ad> --project maxxing_app --output-dir Data/Migrations
 cd app && npx expo start --web       # Uygulama (web) -> http://localhost:8081
@@ -55,6 +55,8 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 - Migration ekledikten sonra API'yi `--no-build` ile başlatma: yeni migration derlenmemiş olur ve API "pending model changes" hatasıyla açılmaz.
 - Bağlantı cümlesi: `appsettings.Development.json` → `ConnectionStrings:Default`. İçindeki şifre yalnızca yerel geliştirme içindir; production'da ortam değişkenine taşınacak.
 - JWT anahtarı: `appsettings.Development.json` → `Jwt:Key` (yalnızca yerel geliştirme için). Production'da `Jwt__Key` ortam değişkeni; anahtar yoksa ya da 32 karakterden kısaysa API açılmaz.
+- E-posta: `Email` ayarları (`EmailOptions`), gönderim `Email/IEmailSender` üzerinden (şimdilik SMTP, MailKit). Development'ta Mailpit: SMTP `localhost:1025`, gelen kutusu `http://localhost:8025`; mailler gerçek adrese gitmez. Production'da `Email__FromAddress`, `Email__SmtpHost`, `Email__SmtpUser`, `Email__SmtpPassword` ortam değişkenleri; `FromAddress` ya da `SmtpHost` yoksa API açılmaz.
+- E-posta doğrulama: varsayılan `[Authorize]` token'da `email_verified=true` ister; onaysız hesaplar sadece `AuthPolicies.AllowUnverified` kullanan endpoint'lere girer (`/auth/me`, `/auth/verify-email`, `/auth/verify-email/resend`). Kodlar `EmailCodes` tablosunda hash'li tutulur (`EmailCodeService`: 15 dk geçerli, 5 deneme, 60 sn tekrar gönderme beklemesi).
 - CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).
 - Örnek istekler: `maxxing_app/maxxing_app.http` (kayıt, giriş, `/auth/me`).
 - Sağlık kontrolü: `GET /health` (veritabanı bağlantısını da kontrol eder).
@@ -78,8 +80,8 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 3. [x] Rutinler, günlük tikleme, günün notu ve seri (3 ve 4. adım birleştirildi): iki rutin türü (yaptım/yapmadım, sayı hedefi); sadece bugün ve dün düzenlenebilir; gün, aktif rutinlerin hepsi tamamlanınca seriye sayılır; "bugün" kullanıcının saat dilimine göre (`User.TimeZone`); silinen rutin arşivlenir
 4. [x] Gruplar ve davet kodu: grup kur, 6 haneli kodla katıl, ayrıl, sahip kodu yeniler; grup sayfasında üyelerin sadece günlük özeti (x/y tamamladı, seri) görünür
 5. [x] Profil + alan seçimi: görünen ad, kısa bio, alanlar (kayıtta "ne için buradasın?" sorulur, profilden değiştirilir; seçime göre rutin önerileri), istatistikler (şu anki seri, en uzun seri, toplam tamamlanan gün), ayarlar (çıkış, şifre değiştir). Fotoğraf şimdilik yok, baş harf gösterilir. Grupta bir üyeye dokununca profil özeti görünür (ad, bio, alanlar, istatistikler); rutin adları ve notlar yine gizli.
-6. [ ] **Sıradaki iş:** E-posta doğrulama. Kayıttan sonra e-postaya 6 haneli kod gider (15 dk geçerli, "kodu tekrar gönder" var); kullanıcı kodu girene kadar uygulamaya giremez: profil oluşturma ("Ne için buradasın?"), rutinler, gruplar hiçbiri açılmaz, sadece "kodu gir" ekranı görünür. API bunu zorlar (onaysız hesabın token'ı korumalı endpoint'lerde reddedilir), istemci sadece ekranı gösterir. Geliştirmede mailler Docker'da Mailpit'e gider (`localhost:8025`, gerçek adrese gitmez); production'da Resend/Brevo/SendGrid gibi bir servis ve alan adı gerekir. Mevcut hesaplar (`vedatkoylahisar`) onaylı sayılır. İleride "şifremi unuttum" da aynı altyapıyı kullanır.
-7. [ ] Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
+6. [x] E-posta doğrulama. Kayıttan sonra e-postaya 6 haneli kod gider (15 dk geçerli, "kodu tekrar gönder" var); kullanıcı kodu girene kadar uygulamaya giremez: profil oluşturma ("Ne için buradasın?"), rutinler, gruplar hiçbiri açılmaz, sadece "kodu gir" ekranı görünür. API bunu zorlar (onaysız hesabın token'ı korumalı endpoint'lerde reddedilir), istemci sadece ekranı gösterir. Geliştirmede mailler Docker'da Mailpit'e gider (`localhost:8025`, gerçek adrese gitmez); production'da Resend/Brevo/SendGrid gibi bir servis ve alan adı gerekir. Mevcut hesaplar (`vedatkoylahisar`) onaylı sayılır. İleride "şifremi unuttum" da aynı altyapıyı kullanır.
+7. [ ] **Sıradaki iş:** Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
 
 2. adım bitince giriş yapılabilen bir site, 7. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
 

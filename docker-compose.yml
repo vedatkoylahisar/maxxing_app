@@ -17,5 +17,14 @@ services:
       timeout: 5s
       retries: 10
 
+  # Geliştirmede giden mailler burada yakalanır, gerçek adrese gitmez. Gelen kutusu: http://localhost:8025
+  mail:
+    image: axllent/mailpit:v1.27
+    container_name: maxxing_mail
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   maxxing_pgdata:

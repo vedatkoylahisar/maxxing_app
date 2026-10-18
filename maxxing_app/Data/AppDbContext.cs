@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<DayNote> DayNotes => Set<DayNote>();
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<GroupMember> GroupMembers => Set<GroupMember>();
+    public DbSet<EmailCode> EmailCodes => Set<EmailCode>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +62,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             member.HasOne(m => m.Group).WithMany(g => g.Members).HasForeignKey(m => m.GroupId).OnDelete(DeleteBehavior.Cascade);
             member.HasOne(m => m.User).WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Cascade);
             member.HasIndex(m => m.UserId);
+        });
+
+        modelBuilder.Entity<EmailCode>(code =>
+        {
+            code.Property(c => c.Purpose).HasConversion<string>().HasMaxLength(32);
+            code.Property(c => c.CodeHash).HasMaxLength(64);
+            code.HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
+            code.HasIndex(c => new { c.UserId, c.Purpose }).IsUnique();
         });
     }
 }

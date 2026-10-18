@@ -23,5 +23,8 @@ public class User
     // IANA saat dilimi (örn. "Europe/Istanbul"). "Bugün"ün hangi gün olduğu buna göre hesaplanır.
     public string TimeZone { get; set; } = UserClock.DefaultTimeZone;
 
+    // Boşsa e-posta henüz onaylanmamıştır; kullanıcı kodu girene kadar uygulamaya giremez.
+    public DateTime? EmailVerifiedAt { get; set; }
+
     public DateTime CreatedAt { get; set; }
 }

@@ -22,6 +22,11 @@ public record LoginRequest(
     [Required(ErrorMessage = "E-posta gerekli.")] string Email,
     [Required(ErrorMessage = "Şifre gerekli.")] string Password);
 
-public record UserResponse(Guid Id, string Email, string UserName, DateTime CreatedAt);
+public record VerifyEmailRequest(
+    [Required(ErrorMessage = "Kod gerekli.")]
+    [RegularExpression("^[0-9]{6}$", ErrorMessage = "Kod 6 haneli olmalı.")]
+    string Code);
+
+public record UserResponse(Guid Id, string Email, string UserName, bool EmailVerified, DateTime CreatedAt);
 
 public record AuthResponse(string Token, DateTime ExpiresAt, UserResponse User);
