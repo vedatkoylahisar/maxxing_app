@@ -24,7 +24,7 @@ Kullanıcı akışı: kayıt ol / profil oluştur → rutinleri belirle → her 
 
 | Parça | Teknoloji | Konum |
 |---|---|---|
-| Uygulama | React Native + Expo (SDK 58), Expo Router. Önce web olarak kullanılacak, sonra aynı kodla iOS. | `app/` |
+| Uygulama | React Native + Expo (SDK 58), Expo Router. Önce webde yayınlanacak, sonra aynı kodla iOS ve Android (App Store, Google Play). | `app/` |
 | API | ASP.NET Core, .NET 10, controller tabanlı, EF Core | `maxxing_app/` |
 | Veritabanı | PostgreSQL 17, Docker içinde | `docker-compose.yml` |
 
@@ -58,7 +58,7 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 - E-posta: `Email` ayarları (`EmailOptions`), gönderim `Email/IEmailSender` üzerinden (şimdilik SMTP, MailKit). Development'ta Mailpit: SMTP `localhost:1025`, gelen kutusu `http://localhost:8025`; mailler gerçek adrese gitmez. Production'da `Email__FromAddress`, `Email__SmtpHost`, `Email__SmtpUser`, `Email__SmtpPassword` ortam değişkenleri; `FromAddress` ya da `SmtpHost` yoksa API açılmaz.
 - E-posta doğrulama: varsayılan `[Authorize]` token'da `email_verified=true` ister; onaysız hesaplar sadece `AuthPolicies.AllowUnverified` kullanan endpoint'lere girer (`/auth/me`, `/auth/verify-email`, `/auth/verify-email/resend`). Kodlar `EmailCodes` tablosunda hash'li tutulur (`EmailCodeService`: 15 dk geçerli, 5 deneme, 60 sn tekrar gönderme beklemesi).
 - CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).
-- Örnek istekler: `maxxing_app/maxxing_app.http` (kayıt, giriş, `/auth/me`).
+- Örnek istekler: `maxxing_app/maxxing_app.http` (kayıt, giriş, `/auth/me`, e-posta kodu doğrulama / tekrar gönderme).
 - Sağlık kontrolü: `GET /health` (veritabanı bağlantısını da kontrol eder).
 - OpenAPI dokümanı (development): `GET /openapi/v1.json`
 - Proje klasörünün adı `maxxing_app` kalmalı: Docker volume adı klasör adından türetiliyor, değişirse boş bir veritabanı açılır.
@@ -82,7 +82,17 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 5. [x] Profil + alan seçimi: görünen ad, kısa bio, alanlar (kayıtta "ne için buradasın?" sorulur, profilden değiştirilir; seçime göre rutin önerileri), istatistikler (şu anki seri, en uzun seri, toplam tamamlanan gün), ayarlar (çıkış, şifre değiştir). Fotoğraf şimdilik yok, baş harf gösterilir. Grupta bir üyeye dokununca profil özeti görünür (ad, bio, alanlar, istatistikler); rutin adları ve notlar yine gizli.
 6. [x] E-posta doğrulama. Kayıttan sonra e-postaya 6 haneli kod gider (15 dk geçerli, "kodu tekrar gönder" var); kullanıcı kodu girene kadar uygulamaya giremez: profil oluşturma ("Ne için buradasın?"), rutinler, gruplar hiçbiri açılmaz, sadece "kodu gir" ekranı görünür. API bunu zorlar (onaysız hesabın token'ı korumalı endpoint'lerde reddedilir), istemci sadece ekranı gösterir. Geliştirmede mailler Docker'da Mailpit'e gider (`localhost:8025`, gerçek adrese gitmez); production'da Resend/Brevo/SendGrid gibi bir servis ve alan adı gerekir. Mevcut hesaplar (`vedatkoylahisar`) onaylı sayılır. İleride "şifremi unuttum" da aynı altyapıyı kullanır.
 7. [ ] **Sıradaki iş:** Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
+8. [ ] Webde yayın:
+   - Alan adı alınır; site ve API HTTPS ile bu alan adından açılır.
+   - API ve PostgreSQL için sunucu (barındırma servisi); production'da migration'ların nasıl uygulanacağı belirlenir (şu an sadece development'ta otomatik).
+   - Uygulamanın web çıktısı (`npx expo export --platform web`) yayınlanır; `EXPO_PUBLIC_API_URL` canlı API adresine ayarlanır.
+   - Gerçek e-posta: Resend (ya da benzeri) hesabı, alan adının DNS kayıtları (SPF/DKIM). Kod değişmez, sadece ayar.
+   - Production ortam değişkenleri: `ConnectionStrings__Default`, `Jwt__Key`, `Cors__Origins`, `Email__FromAddress`, `Email__SmtpHost`, `Email__SmtpPort`, `Email__SmtpUser`, `Email__SmtpPassword`. Hiçbiri repoya girmez.
+9. [ ] Google Play ve App Store:
+   - EAS Build ile Android ve iOS derlemeleri; telefonda deneme (TestFlight, Play iç test).
+   - Geliştirici hesapları: Apple Developer (yıllık ücretli), Google Play Console (tek seferlik ücret).
+   - Mağaza şartları: uygulama içinden hesap silme, gizlilik politikası sayfası (web adresi), ikon, açılış ekranı, mağaza görselleri ve açıklamalar.
 
-2. adım bitince giriş yapılabilen bir site, 7. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama olacak.
+2. adım bitince giriş yapılabilen bir site, 7. adım bitince arkadaşlarla gerçekten kullanılabilir bir uygulama, 8. adım bitince herkesin açabileceği bir site, 9. adım bitince mağazalarda bir uygulama olacak.
 
 İleride belki: yapay zekâ sohbet asistanı, sesli komut ("bugün 5 bin adım attım"). Bunlar için şimdiden kod yazılmaz; ama her işlem API üzerinden yapıldığı sürece ileride aynı endpoint'leri çağırarak eklenebilirler. Bu yüzden iş kuralı istemciye konmaz.
