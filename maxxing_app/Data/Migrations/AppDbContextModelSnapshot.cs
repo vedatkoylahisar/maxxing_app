@@ -51,6 +51,42 @@ namespace maxxing_app.Data.Migrations
                     b.ToTable("DayNotes");
                 });
 
+            modelBuilder.Entity("maxxing_app.Models.EmailCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Purpose")
+                        .IsUnique();
+
+                    b.ToTable("EmailCodes");
+                });
+
             modelBuilder.Entity("maxxing_app.Models.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -198,6 +234,9 @@ namespace maxxing_app.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<DateTime?>("EmailVerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -226,6 +265,17 @@ namespace maxxing_app.Data.Migrations
                 });
 
             modelBuilder.Entity("maxxing_app.Models.DayNote", b =>
+                {
+                    b.HasOne("maxxing_app.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("maxxing_app.Models.EmailCode", b =>
                 {
                     b.HasOne("maxxing_app.Models.User", "User")
                         .WithMany()

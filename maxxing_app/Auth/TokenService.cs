@@ -23,6 +23,7 @@ public class TokenService(IOptions<JwtOptions> options)
             {
                 [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
                 [JwtRegisteredClaimNames.UniqueName] = user.UserName,
+                [AuthPolicies.EmailVerifiedClaim] = user.EmailVerifiedAt is null ? "false" : "true",
             },
             SigningCredentials = new SigningCredentials(_jwt.GetSigningKey(), SecurityAlgorithms.HmacSha256),
         };

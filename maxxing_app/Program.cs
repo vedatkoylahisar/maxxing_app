@@ -2,8 +2,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using maxxing_app.Auth;
 using maxxing_app.Data;
+using maxxing_app.Email;
 using maxxing_app.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -41,8 +43,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = jwt.GetSigningKey(),
             NameClaimType = JwtRegisteredClaimNames.UniqueName,
         };
+        options.Events = new JwtBearerEvents
+        {
+            // E-posta doğrulamadan önce verilmiş token'larda bu claim yok; geçersiz sayılır, kullanıcı bir kez yeniden giriş yapar.
+            OnTokenValidated = context =>
+            {
+                if (context.Principal?.HasClaim(c => c.Type == AuthPolicies.EmailVerifiedClaim) != true)
+                    context.Fail("Token'da e-posta onay bilgisi yok.");
+                return Task.CompletedTask;
+            },
+        };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    // [Authorize]: giriş yapmış ve e-postasını onaylamış olmak gerekir.
+    .SetDefaultPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .RequireClaim(AuthPolicies.EmailVerifiedClaim, "true")
+        .Build())
+    .AddPolicy(AuthPolicies.AllowUnverified, policy => policy.RequireAuthenticatedUser());
+
+// E-posta: kodlar ve gönderim
+var emailSection = builder.Configuration.GetSection(EmailOptions.SectionName);
+var email = emailSection.Get<EmailOptions>() ?? new EmailOptions();
+if (string.IsNullOrWhiteSpace(email.FromAddress) || string.IsNullOrWhiteSpace(email.SmtpHost))
+    throw new InvalidOperationException("Email:FromAddress ya da Email:SmtpHost ayarlanmamış.");
+
+builder.Services.Configure<EmailOptions>(emailSection);
+builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<EmailCodeService>();
 
 // Expo web istemcisinin API'ye istek atabilmesi için
 var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];

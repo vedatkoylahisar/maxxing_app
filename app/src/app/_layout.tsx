@@ -45,13 +45,19 @@ function RootNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
 
   if (!ready) return null;
 
+  const verified = !!session?.user.emailVerified;
+
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="sign-in" />
         <Stack.Screen name="sign-up" />
       </Stack.Protected>
-      <Stack.Protected guard={!!session}>
+      {/* E-posta onaylanana kadar sadece kod ekranı açılır. */}
+      <Stack.Protected guard={!!session && !verified}>
+        <Stack.Screen name="verify-email" />
+      </Stack.Protected>
+      <Stack.Protected guard={verified}>
         <Stack.Screen name="(app)" />
       </Stack.Protected>
     </Stack>

@@ -30,3 +30,19 @@ GET {{maxxing_app_HostAddress}}/auth/me
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
+
+# Kod, Mailpit'e düşen mailde: http://localhost:8025
+POST {{maxxing_app_HostAddress}}/auth/verify-email
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "code": "123456"
+}
+
+###
+
+POST {{maxxing_app_HostAddress}}/auth/verify-email/resend
+Authorization: Bearer {{login.response.body.$.token}}
+
+###

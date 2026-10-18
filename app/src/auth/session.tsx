@@ -29,6 +29,8 @@ function parseSession(raw: string | null): Session | null {
   try {
     const session = JSON.parse(raw) as Session;
     if (new Date(session.expiresAt).getTime() <= Date.now()) return null;
+    // E-posta doğrulamadan önce kaydedilmiş oturum: API o token'ı artık kabul etmiyor.
+    if (typeof session.user.emailVerified !== 'boolean') return null;
     return session;
   } catch {
     return null;
@@ -67,7 +69,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       // Kayıtlı oturumu arka planda doğrula: kullanıcı silinmiş ya da token geçersizse çıkış yap.
       try {
         const user = await getMe(stored.token);
-        if (!cancelled) setSession((current) => (current ? { ...current, user } : current));
+        if (cancelled) return;
+        // Başka bir cihazda onaylanmış ama bu token onaysız: yeni token için yeniden giriş gerekir.
+        if (user.emailVerified && !stored.user.emailVerified) {
+          await signOut();
+          return;
+        }
+        setSession((current) => (current ? { ...current, user } : current));
       } catch (error) {
         if (!cancelled && error instanceof ApiError && error.status === 401) await signOut();
       }
