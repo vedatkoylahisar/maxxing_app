@@ -68,11 +68,22 @@ builder.Services.AddAuthorizationBuilder()
 // E-posta: kodlar ve gönderim
 var emailSection = builder.Configuration.GetSection(EmailOptions.SectionName);
 var email = emailSection.Get<EmailOptions>() ?? new EmailOptions();
-if (string.IsNullOrWhiteSpace(email.FromAddress) || string.IsNullOrWhiteSpace(email.SmtpHost))
-    throw new InvalidOperationException("Email:FromAddress ya da Email:SmtpHost ayarlanmamış.");
+if (string.IsNullOrWhiteSpace(email.FromAddress))
+    throw new InvalidOperationException("Email:FromAddress ayarlanmamış.");
 
 builder.Services.Configure<EmailOptions>(emailSection);
-builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+if (string.Equals(email.Provider, "Brevo", StringComparison.OrdinalIgnoreCase))
+{
+    if (string.IsNullOrWhiteSpace(email.BrevoApiKey))
+        throw new InvalidOperationException("Email:BrevoApiKey ayarlanmamış.");
+    builder.Services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+}
+else
+{
+    if (string.IsNullOrWhiteSpace(email.SmtpHost))
+        throw new InvalidOperationException("Email:SmtpHost ayarlanmamış.");
+    builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+}
 builder.Services.AddScoped<EmailCodeService>();
 
 // Expo web istemcisinin API'ye istek atabilmesi için
@@ -99,9 +110,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
 
-    // Apply pending migrations automatically during development.
-    using var scope = app.Services.CreateScope();
+// Bekleyen migration'lar açılışta uygulanır (development ve production). API tek kopya çalıştığı sürece güvenli;
+// birden fazla kopyaya çıkılırsa migration ayrı bir adımda uygulanmalı.
+using (var scope = app.Services.CreateScope())
+{
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 }

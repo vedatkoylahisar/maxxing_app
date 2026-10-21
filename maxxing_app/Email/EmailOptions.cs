@@ -8,6 +8,10 @@ public class EmailOptions
     public string FromAddress { get; set; } = "";
     public string FromName { get; set; } = "maxxing";
 
+    // "Smtp" (geliştirmede Mailpit) ya da "Brevo" (production, HTTP API; Email__BrevoApiKey ortam değişkeni).
+    public string Provider { get; set; } = "Smtp";
+    public string? BrevoApiKey { get; set; }
+
     // Geliştirmede Mailpit (localhost:1025). Production'da mail servisinin SMTP bilgileri ortam değişkeninden gelir
     // (Email__SmtpHost, Email__SmtpUser, Email__SmtpPassword).
     public string SmtpHost { get; set; } = "";
