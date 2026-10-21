@@ -53,11 +53,12 @@ cd app && npx tsc --noEmit && npx expo lint   # tip kontrolü + lint
 - Bu makinede Expo (Metro) dosya değişikliklerini her zaman algılamıyor: değişiklik ekranda görünmüyorsa sunucuyu `npx expo start --web --clear` ile yeniden başlat.
 - API'deki doğrulama kuralları `app/src/auth/validation.ts` içinde tekrarlanır (hızlı geri bildirim için); biri değişirse diğeri de değişir.
 
-- Development ortamında bekleyen migration'lar API açılışında otomatik uygulanır (`Program.cs`).
+- Bekleyen migration'lar API açılışında otomatik uygulanır, development'ta da production'da da (`Program.cs`). API tek kopya çalıştığı sürece güvenli.
 - Migration ekledikten sonra API'yi `--no-build` ile başlatma: yeni migration derlenmemiş olur ve API "pending model changes" hatasıyla açılmaz.
 - Bağlantı cümlesi: `appsettings.Development.json` → `ConnectionStrings:Default`. İçindeki şifre yalnızca yerel geliştirme içindir; production'da ortam değişkenine taşınacak.
 - JWT anahtarı: `appsettings.Development.json` → `Jwt:Key` (yalnızca yerel geliştirme için). Production'da `Jwt__Key` ortam değişkeni; anahtar yoksa ya da 32 karakterden kısaysa API açılmaz.
-- E-posta: `Email` ayarları (`EmailOptions`), gönderim `Email/IEmailSender` üzerinden (şimdilik SMTP, MailKit). Development'ta Mailpit: SMTP `localhost:1025`, gelen kutusu `http://localhost:8025`; mailler gerçek adrese gitmez. Production'da `Email__FromAddress`, `Email__SmtpHost`, `Email__SmtpUser`, `Email__SmtpPassword` ortam değişkenleri; `FromAddress` ya da `SmtpHost` yoksa API açılmaz.
+- E-posta: `Email` ayarları (`EmailOptions`), gönderim `Email/IEmailSender` üzerinden; `Email:Provider` hangisinin kullanılacağını seçer. `Smtp` (varsayılan, MailKit): development'ta Mailpit, SMTP `localhost:1025`, gelen kutusu `http://localhost:8025`; mailler gerçek adrese gitmez. `Brevo` (production, HTTP API, `BrevoEmailSender`): Render ücretsiz planı SMTP portlarını kapattığı için production'da bu kullanılır; `Email__Provider=Brevo`, `Email__BrevoApiKey`, `Email__FromAddress` (Brevo'da onaylı gönderen adresi). Anahtar `xkeysib-` ile başlayan API anahtarıdır (`xsmtpsib-` SMTP anahtarı çalışmaz: 401 "Key not found"). Brevo'da Security → Authorized IPs → API keys engellemesi kapalı olmalı (yeni anahtar oluşturunca kendiliğinden açılabiliyor; Render'ın IP'si sabit değil). `FromAddress` yoksa, ya da seçilen servisin ayarı (`SmtpHost` / `BrevoApiKey`) yoksa API açılmaz.
+- Production: API https://maxxing-api.onrender.com, site https://maxxingapp-ashy.vercel.app (`EXPO_PUBLIC_API_URL` Vercel'de Production ortam değişkeni; değişince Redeploy gerekir). API `maxxing_app/Dockerfile` ile Render'da (ücretsiz plan, port 8080; 15 dk boşta kalınca uyur), veritabanı Neon (ücretsiz PostgreSQL). Uygulama (web) Vercel'de (`app/vercel.json`).
 - E-posta doğrulama: varsayılan `[Authorize]` token'da `email_verified=true` ister; onaysız hesaplar sadece `AuthPolicies.AllowUnverified` kullanan endpoint'lere girer (`/auth/me`, `/auth/verify-email`, `/auth/verify-email/resend`). Kodlar `EmailCodes` tablosunda hash'li tutulur (`EmailCodeService`: 15 dk geçerli, 5 deneme, 60 sn tekrar gönderme beklemesi).
 - Diller (API): uygulama her istekte `Accept-Language` gönderir; Türkçe ise Türkçe, değilse İngilizce (`Localization/Languages.cs`, `UseRequestLocalization`). Kullanıcıya giden metinler `Resources/SharedResource.resx` (İngilizce) ve `SharedResource.tr.resx` (Türkçe) içinde; controller'larda `IStringLocalizer<SharedResource>` → `localizer["Anahtar"]`, Contracts'ta `ErrorMessage = "Anahtar"`. Yeni metin eklenirse iki dosyaya da eklenir. Alan kataloğu (`Profiles/AreaCatalog.cs`) metinleri kendi içinde iki dilli. `User.Language` kayıt ve girişte güncellenir; mailler bu dilde gider. `SharedResource.cs` `Resources/` klasörüne taşınmamalı (metinler bulunamaz).
 - CORS: izin verilen adresler `Cors:Origins` (development'ta Expo web: `http://localhost:8081`).
@@ -88,10 +89,11 @@ Her adımda önce backend, sonra o özelliğin ekranı yapılır.
 7. [ ] **Sıradaki iş:** Paylaşım ve grup akışı (rutin kayıtlarının grupta görünmesi + "bugün öğrendim" paylaşımları)
 8. [ ] Webde yayın:
    - Alan adı alınır; site ve API HTTPS ile bu alan adından açılır.
-   - API ve PostgreSQL için sunucu (barındırma servisi); production'da migration'ların nasıl uygulanacağı belirlenir (şu an sadece development'ta otomatik).
-   - Uygulamanın web çıktısı (`npx expo export --platform web`) yayınlanır; `EXPO_PUBLIC_API_URL` canlı API adresine ayarlanır.
-   - Gerçek e-posta: Resend (ya da benzeri) hesabı, alan adının DNS kayıtları (SPF/DKIM). Kod değişmez, sadece ayar.
-   - Production ortam değişkenleri: `ConnectionStrings__Default`, `Jwt__Key`, `Cors__Origins`, `Email__FromAddress`, `Email__SmtpHost`, `Email__SmtpPort`, `Email__SmtpUser`, `Email__SmtpPassword`. Hiçbiri repoya girmez.
+   - [x] API Render'da (Docker), PostgreSQL Neon'da; migration'lar API açılışında uygulanır.
+   - [x] Uygulamanın web çıktısı Vercel'de; `EXPO_PUBLIC_API_URL` Vercel'de canlı API adresine ayarlanır.
+   - [x] E-posta Brevo HTTP API ile, alan adısız (gönderen Gmail adresi; mailler spam'e düşebilir).
+   - [ ] Alan adı alınınca: Brevo'da alan adı doğrulanır (SPF/DKIM), `Email__FromAddress` o alan adından olur. Kod değişmez.
+   - Production ortam değişkenleri (Render): `ConnectionStrings__Default`, `Jwt__Key`, `Cors__Origins__0`, `Email__Provider`, `Email__BrevoApiKey`, `Email__FromAddress`. Hiçbiri repoya girmez.
 9. [ ] Google Play ve App Store:
    - EAS Build ile Android ve iOS derlemeleri; telefonda deneme (TestFlight, Play iç test).
    - Geliştirici hesapları: Apple Developer (yıllık ücretli), Google Play Console (tek seferlik ücret).
